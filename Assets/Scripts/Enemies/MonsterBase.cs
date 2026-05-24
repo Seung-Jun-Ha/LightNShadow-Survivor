@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 namespace LightNShadowSurvivor
 {
@@ -6,6 +7,9 @@ namespace LightNShadowSurvivor
     {
         [SerializeField] protected float maxHealth = 100f;
         protected float currentHealth;
+        protected bool isDead = false;
+
+        public event Action OnDeath;
 
         protected virtual void Awake()
         {
@@ -14,6 +18,8 @@ namespace LightNShadowSurvivor
 
         public virtual void ModifyHealth(float amount)
         {
+            if (isDead) return;
+
             currentHealth += amount;
             if (currentHealth <= 0)
             {
@@ -23,7 +29,9 @@ namespace LightNShadowSurvivor
 
         protected virtual void Die()
         {
-            Destroy(gameObject);
+            if (isDead) return;
+            isDead = true;
+            OnDeath?.Invoke();
         }
     }
 }

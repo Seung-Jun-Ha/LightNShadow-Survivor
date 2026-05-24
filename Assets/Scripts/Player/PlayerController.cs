@@ -7,20 +7,30 @@ namespace LightNShadowSurvivor
     {
         [Header("Movement Settings")]
         [SerializeField] private float moveSpeed = 6f;
-        [SerializeField] private float mouseSensitivity = 0.15f;
-        
+        [SerializeField] private float turnSpeed = 100f; // Adjusted for degrees per second
+
+        public float MoveSpeed { get => moveSpeed; set => moveSpeed = value; }
+
         private Rigidbody rb;
         private Animator animator;
         private InputAction moveAction;
-        private InputAction lookAction;
         private Vector2 moveInput;
-        private Vector2 lookInput;
-        private float rotationY;
 
         private void Awake()
         {
             rb = GetComponent<Rigidbody>();
             animator = GetComponentInChildren<Animator>();
+            if (animator != null)
+            {
+                animator.applyRootMotion = false;
+            }
+
+            // Lock rotation to prevent physics spinning, but we will control Y rotation manually
+            if (rb != null)
+            {
+                rb.constraints = RigidbodyConstraints.FreezeRotation;
+                rb.interpolation = RigidbodyInterpolation.Interpolate;
+            }
         }
 
         private void OnEnable()
@@ -29,52 +39,49 @@ namespace LightNShadowSurvivor
             {
                 InputSystem.actions.Enable();
                 moveAction = InputSystem.actions.FindAction("Move");
-                lookAction = InputSystem.actions.FindAction("Look");
             }
-            
-            // Lock cursor for better 3rd person control
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-        }
-
-        private void OnDisable()
-        {
-            if (moveAction != null) moveAction.Disable();
-            if (lookAction != null) lookAction.Disable();
             
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
 
-        private void Start()
+        private void OnDisable()
         {
-            if (rb == null) rb = gameObject.AddComponent<Rigidbody>();
-            rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
-            
-            rotationY = transform.eulerAngles.y;
+            if (moveAction != null) moveAction.Disable();
         }
 
         private void Update()
         {
             if (moveAction != null) moveInput = moveAction.ReadValue<Vector2>();
-            if (lookAction != null) lookInput = lookAction.ReadValue<Vector2>();
             
-            // Handle Rotation
-            rotationY += lookInput.x * mouseSensitivity;
-            transform.rotation = Quaternion.Euler(0, rotationY, 0);
-
             UpdateAnimations();
         }
 
         private void FixedUpdate()
         {
+            HandleRotation();
             Move();
+            
+            if (rb != null)
+            {
+                rb.angularVelocity = Vector3.zero;
+            }
+        }
+
+        private void HandleRotation()
+        {
+            // A/D (moveInput.x) controls rotation
+            if (Mathf.Abs(moveInput.x) > 0.01f)
+            {
+                float rotation = moveInput.x * turnSpeed * Time.fixedDeltaTime;
+                rb.MoveRotation(rb.rotation * Quaternion.Euler(0, rotation, 0));
+            }
         }
 
         private void Move()
         {
-            // Strafe movement: relative to player's current facing
-            Vector3 move = (transform.forward * moveInput.y + transform.right * moveInput.x).normalized;
+            // W/S (moveInput.y) controls forward/backward movement
+            Vector3 move = transform.forward * moveInput.y;
             Vector3 targetVelocity = move * moveSpeed;
             targetVelocity.y = rb.linearVelocity.y;
             rb.linearVelocity = targetVelocity;
@@ -84,8 +91,8 @@ namespace LightNShadowSurvivor
         {
             if (animator != null)
             {
-                // For animation, we use the magnitude of movement
-                animator.SetFloat("MoveSpeed", moveInput.magnitude);
+                // Animation based on forward movement
+                animator.SetFloat("MoveSpeed", Mathf.Abs(moveInput.y));
             }
         }
     }
