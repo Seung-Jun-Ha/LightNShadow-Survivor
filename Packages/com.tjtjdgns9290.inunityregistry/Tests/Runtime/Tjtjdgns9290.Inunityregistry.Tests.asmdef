@@ -1,0 +1,11 @@
+{
+    "name": "Tjtjdgns9290.Inunityregistry.Tests",
+    "references": [
+        "Tjtjdgns9290.Inunityregistry"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": []
+}

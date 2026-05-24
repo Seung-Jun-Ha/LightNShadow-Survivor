@@ -1,0 +1,10 @@
+{
+    "name": "Tjtjdgns9290.Inunityregistry.Editor",
+    "references": [
+      "Tjtjdgns9290.Inunityregistry"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": []
+}

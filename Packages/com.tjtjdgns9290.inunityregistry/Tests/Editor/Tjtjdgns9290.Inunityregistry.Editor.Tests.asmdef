@@ -1,0 +1,14 @@
+{
+    "name": "Tjtjdgns9290.Inunityregistry.Editor.Tests",
+    "references": [
+        "Tjtjdgns9290.Inunityregistry.Editor",
+        "Tjtjdgns9290.Inunityregistry"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": []
+}
