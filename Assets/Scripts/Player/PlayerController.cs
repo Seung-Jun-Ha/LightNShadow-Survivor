@@ -70,8 +70,8 @@ namespace LightNShadowSurvivor
 
         private void HandleRotation()
         {
-            // A/D (moveInput.x) controls rotation
-            if (Mathf.Abs(moveInput.x) > 0.01f)
+            // A/D keys for turning (Left/Right rotation)
+            if (moveInput.x != 0)
             {
                 float rotation = moveInput.x * turnSpeed * Time.fixedDeltaTime;
                 rb.MoveRotation(rb.rotation * Quaternion.Euler(0, rotation, 0));
@@ -80,9 +80,11 @@ namespace LightNShadowSurvivor
 
         private void Move()
         {
-            // W/S (moveInput.y) controls forward/backward movement
-            Vector3 move = transform.forward * moveInput.y;
-            Vector3 targetVelocity = move * moveSpeed;
+            // W/S keys for Forward/Backward movement relative to character's facing direction
+            Vector3 moveDirection = transform.forward * moveInput.y;
+            Vector3 targetVelocity = moveDirection * moveSpeed;
+            
+            // Maintain vertical velocity (gravity/jumping)
             targetVelocity.y = rb.linearVelocity.y;
             rb.linearVelocity = targetVelocity;
         }
@@ -91,8 +93,9 @@ namespace LightNShadowSurvivor
         {
             if (animator != null)
             {
-                // Animation based on forward movement
-                animator.SetFloat("MoveSpeed", Mathf.Abs(moveInput.y));
+                // Animation based on movement magnitude
+                float speed = new Vector2(moveInput.x, moveInput.y).magnitude;
+                animator.SetFloat("MoveSpeed", speed);
             }
         }
     }

@@ -1,7 +1,9 @@
 ﻿<Solution>
+  <Project Path="Gentleland.SteampunkUI.DemoAndExample.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="Tjtjdgns9290.Inunityregistry.Tests.csproj" />
+  <Project Path="Gentleland.Utils.SteampunkUI.csproj" />
   <Project Path="Tjtjdgns9290.Inunityregistry.Editor.Tests.csproj" />
   <Project Path="Tjtjdgns9290.Inunityregistry.Editor.csproj" />
   <Project Path="Tjtjdgns9290.Inunityregistry.csproj" />

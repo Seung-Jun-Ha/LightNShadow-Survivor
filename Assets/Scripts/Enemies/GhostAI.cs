@@ -32,10 +32,13 @@ namespace LightNShadowSurvivor
         private static readonly int AttackState = Animator.StringToHash("attack_shift");
         private static readonly int IdleState = Animator.StringToHash("idle");
 
+        private MonsterBase monsterBase;
+
         private void Awake()
         {
             agent = GetComponent<NavMeshAgent>();
             animator = GetComponentInChildren<Animator>();
+            monsterBase = GetComponent<MonsterBase>();
             
             // Disable CharacterController if it exists as it conflicts with NavMeshAgent
             if (TryGetComponent(out CharacterController cc))
@@ -135,8 +138,18 @@ namespace LightNShadowSurvivor
         public void ApplySlow()
         {
             isSlowing = true;
-            slowTimer = 1.0f; // 1 second slow
-            agent.speed = originalSpeed * 0.5f;
+            slowTimer = 0.2f; // Short duration, refreshed by FlashLightAttack
+            
+            float slowFactor = 0.5f; // Default 50% slow
+            if (monsterBase != null)
+            {
+                if (monsterBase.ReactionType == GhostReactionType.Fast)
+                {
+                    slowFactor = 0.2f; // 80% slow for Fast ghosts
+                }
+            }
+            
+            agent.speed = originalSpeed * slowFactor;
         }
 
         private void HandleSlowEffect()
