@@ -7,7 +7,7 @@ namespace LightNShadowSurvivor
     {
         [SerializeField] private Light directionalLight;
         [SerializeField] private float sunriseDuration = 10f;
-        [SerializeField] private GameObject resultUI;
+        private GameObject resultUI;
 
         private void Start()
         {
@@ -15,6 +15,16 @@ namespace LightNShadowSurvivor
             {
                 GameManager.Instance.OnStateChanged += HandleStateChanged;
             }
+            
+            // Try to find Result_UI if not assigned (it's in UIScene now)
+            StartCoroutine(FindResultUIRoutine());
+        }
+
+        private IEnumerator FindResultUIRoutine()
+        {
+            // Wait a bit for UIScene to load
+            yield return new WaitForSeconds(0.5f);
+            resultUI = GameObject.Find("Result_UI");
             if (resultUI != null) resultUI.SetActive(false);
         }
 

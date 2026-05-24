@@ -20,9 +20,26 @@ namespace LightNShadowSurvivor
             else Destroy(gameObject);
         }
 
-        private void Start()
+        private System.Collections.IEnumerator Start()
         {
+            yield return StartCoroutine(LoadUISceneRoutine());
             ChangeState(GameState.Intro);
+        }
+
+        private System.Collections.IEnumerator LoadUISceneRoutine()
+        {
+            string scenePath = "Assets/Scenes/UIScene.unity";
+            if (!UnityEngine.SceneManagement.SceneManager.GetSceneByPath(scenePath).isLoaded)
+            {
+                Debug.Log($"[GameManager] Loading {scenePath} additively...");
+                var op = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(scenePath, UnityEngine.SceneManagement.LoadSceneMode.Additive);
+                yield return op;
+                Debug.Log($"[GameManager] {scenePath} loaded successfully.");
+            }
+            else
+            {
+                Debug.Log($"[GameManager] {scenePath} was already loaded.");
+            }
         }
 
         public void ChangeState(GameState newState)

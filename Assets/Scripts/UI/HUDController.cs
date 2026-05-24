@@ -13,11 +13,21 @@ namespace LightNShadowSurvivor
 
         private void Start()
         {
+            Debug.Log("[HUDController] Start called.");
             GameObject player = GameObject.Find("Player_Main");
             if (player != null)
             {
                 playerHealth = player.GetComponent<PlayerHealth>();
+                Debug.Log("[HUDController] Player_Main found.");
             }
+            else
+            {
+                Debug.LogWarning("[HUDController] Player_Main NOT found in scene!");
+            }
+
+            if (healthText == null) Debug.LogError("[HUDController] healthText reference missing!");
+            if (roundText == null) Debug.LogError("[HUDController] roundText reference missing!");
+            if (timerText == null) Debug.LogError("[HUDController] timerText reference missing!");
         }
 
         private void Update()
