@@ -9,9 +9,9 @@ namespace LightNShadowSurvivor
 {
     public class FlashLightAttack : MonoBehaviour
     {
-        public float damagePerSecond = 5000.0f; // Extremely high for near-instant kill
-        public float range = 40f; 
-        public float angle = 140f; // Very wide angle
+        public float damagePerSecond = 85.0f; // ~1.2s to kill 100 HP monster
+        public float range = 20f; 
+        public float angle = 60f; 
         public LayerMask targetLayer;
 
         public Light lightComponent;
@@ -33,59 +33,57 @@ namespace LightNShadowSurvivor
             if (lightComponent != null)
             {
                 lightComponent.enabled = true;
-                lightComponent.range = range;
-                lightComponent.spotAngle = angle;
             }
         }
 
         void Update()
         {
-            HandleInput();
+            // HandleInput(); // Temporarily disabled to ensure light stays ON
 
-            // Always ensure setup is valid
-            if (targetLayer == 0) Setup();
-
-            if (lightComponent == null || !lightComponent.enabled) return;
+            if (lightComponent == null)
+            {
+                lightComponent = GetComponentInChildren<Light>();
+                if (lightComponent == null) return;
+            }
+            
+            // Force light ON for debug
+            lightComponent.enabled = true;
+            lightComponent.range = range;
+            lightComponent.spotAngle = angle;
 
             Vector3 attackPos = lightComponent.transform.position;
+            // Use player forward if light direction is zero or too vertical
             Vector3 attackDir = lightComponent.transform.forward;
+            Vector3 forward2D = Vector3.ProjectOnPlane(attackDir, Vector3.up).normalized;
+            if (forward2D.magnitude < 0.1f) forward2D = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
 
-            if (attackDir == Vector3.zero) attackDir = transform.forward;
+            Debug.DrawRay(attackPos, forward2D * range, Color.green);
 
-            Debug.DrawRay(attackPos, attackDir * range, Color.yellow);
-
-            // Using standard OverlapSphere for debugging certainty
+            // Broad detection
             Collider[] hits = Physics.OverlapSphere(attackPos, range, targetLayer, QueryTriggerInteraction.Collide);
-
-            if (hits.Length > 0 && Time.frameCount % 60 == 0) 
-                Debug.Log($"[FlashLightAttack] OverlapSphere found {hits.Length} enemies in range.");
 
             foreach (var col in hits)
             {
                 if (col == null) continue;
 
-                Vector3 targetPoint = col.bounds.center;
-                Vector3 dirToTarget = (targetPoint - attackPos).normalized;
-                float angleToTarget = Vector3.Angle(attackDir, dirToTarget);
+                // Horizontal direction to target
+                Vector3 toTarget = col.transform.position - attackPos;
+                Vector3 toTarget2D = Vector3.ProjectOnPlane(toTarget, Vector3.up).normalized;
                 
-                // Root-based angle check as backup
-                float angleToRoot = Vector3.Angle(attackDir, (col.transform.position - attackPos).normalized);
-                float minAngle = Mathf.Min(angleToTarget, angleToRoot);
+                float angleToTarget = Vector3.Angle(forward2D, toTarget2D);
                 
-                if (minAngle < angle * 0.5f)
+                // Be very generous with the angle (using provided angle variable)
+                if (angleToTarget < angle * 0.5f)
                 {
                     var receiver = col.GetComponent<LightDamageReceiver>();
                     if (receiver == null) receiver = col.GetComponentInParent<LightDamageReceiver>();
                     
                     if (receiver != null)
                     {
-                        receiver.TakeLightDamage(damagePerSecond * Time.deltaTime);
-                        if (Time.frameCount % 15 == 0) 
-                            Debug.Log($"[FlashLightAttack] DAMAGING {col.name} (Angle: {minAngle:F1})");
-                    }
-                    else if (Time.frameCount % 60 == 0)
-                    {
-                        Debug.LogWarning($"[FlashLightAttack] {col.name} has no LightDamageReceiver!");
+                        // Use high damage for testing
+                        receiver.TakeLightDamage(1000f * Time.deltaTime);
+                        if (Time.frameCount % 10 == 0) 
+                            Debug.Log($"[FlashLightAttack] HIT: {col.name}, Angle2D: {angleToTarget:F1}");
                     }
                 }
             }
