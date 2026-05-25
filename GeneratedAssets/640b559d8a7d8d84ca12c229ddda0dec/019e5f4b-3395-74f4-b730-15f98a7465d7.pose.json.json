@@ -1,0 +1,12 @@
+{
+    "asset": "640b559d8a7d8d84ca12c229ddda0dec",
+    "fileName": "019e5f4b-3395-74f4-b730-15f98a7465d7.pose.json",
+    "prompt": "A natural humanoid idle animation, standing still with slight breathing motion, loops seamlessly.",
+    "negativePrompt": "",
+    "model": "unity-text-to-motion",
+    "modelName": "Text to Motion",
+    "customSeed": 636690526,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "isTrimmed": false
+}

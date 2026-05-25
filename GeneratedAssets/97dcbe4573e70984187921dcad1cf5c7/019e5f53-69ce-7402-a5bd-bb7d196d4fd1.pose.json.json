@@ -1,0 +1,12 @@
+{
+    "asset": "97dcbe4573e70984187921dcad1cf5c7",
+    "fileName": "019e5f53-69ce-7402-a5bd-bb7d196d4fd1.pose.json",
+    "prompt": "A natural humanoid walking backward animation, loops seamlessly.",
+    "negativePrompt": "",
+    "model": "unity-text-to-motion",
+    "modelName": "Text to Motion",
+    "customSeed": 1526147867,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "isTrimmed": false
+}

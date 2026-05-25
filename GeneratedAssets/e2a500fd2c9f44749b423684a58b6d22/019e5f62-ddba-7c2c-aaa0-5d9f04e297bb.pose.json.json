@@ -1,0 +1,12 @@
+{
+    "asset": "e2a500fd2c9f44749b423684a58b6d22",
+    "fileName": "019e5f62-ddba-7c2c-aaa0-5d9f04e297bb.pose.json",
+    "prompt": "A simple, stylized bouncy walking animation for a low-poly character, loops seamlessly.",
+    "negativePrompt": "",
+    "model": "unity-text-to-motion",
+    "modelName": "Text to Motion",
+    "customSeed": 1086848085,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "isTrimmed": false
+}

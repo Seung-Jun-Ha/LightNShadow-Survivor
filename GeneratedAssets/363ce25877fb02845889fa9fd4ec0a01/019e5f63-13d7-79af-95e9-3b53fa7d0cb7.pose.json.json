@@ -1,0 +1,12 @@
+{
+    "asset": "363ce25877fb02845889fa9fd4ec0a01",
+    "fileName": "019e5f63-13d7-79af-95e9-3b53fa7d0cb7.pose.json",
+    "prompt": "A simple, stylized bouncy backward walking animation, loops seamlessly.",
+    "negativePrompt": "",
+    "model": "unity-text-to-motion",
+    "modelName": "Text to Motion",
+    "customSeed": 30479859,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "isTrimmed": false
+}

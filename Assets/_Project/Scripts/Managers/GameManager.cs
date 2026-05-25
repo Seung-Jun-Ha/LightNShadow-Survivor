@@ -3,7 +3,7 @@ using System;
 
 namespace LightNShadowSurvivor
 {
-    public enum GameState { Intro, Round, Upgrade, Ending, GameOver }
+    public enum GameState { MainMenu, Intro, Round, Upgrade, Ending, GameOver }
 
     public class GameManager : MonoBehaviour
     {
@@ -16,23 +16,32 @@ namespace LightNShadowSurvivor
 
         private void Awake()
         {
-            if (Instance == null) Instance = this;
+            if (Instance == null)
+            {
+                Instance = this;
+                // DontDestroyOnLoad(gameObject); // We are in a single-scene setup mostly, but good practice
+            }
             else Destroy(gameObject);
         }
 
         private System.Collections.IEnumerator Start()
         {
             yield return StartCoroutine(LoadUISceneRoutine());
-            ChangeState(GameState.Intro);
+            ChangeState(GameState.MainMenu);
         }
 
         private System.Collections.IEnumerator LoadUISceneRoutine()
         {
-            string scenePath = "Assets/Scenes/UIScene.unity";
+            string scenePath = "Assets/_Project/Scenes/UIScene.unity";
             if (!UnityEngine.SceneManagement.SceneManager.GetSceneByPath(scenePath).isLoaded)
             {
                 Debug.Log($"[GameManager] Loading {scenePath} additively...");
                 var op = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(scenePath, UnityEngine.SceneManagement.LoadSceneMode.Additive);
+                if (op == null)
+                {
+                    Debug.LogError($"[GameManager] Failed to start loading {scenePath}. Check if it's in Build Settings.");
+                    yield break;
+                }
                 yield return op;
                 Debug.Log($"[GameManager] {scenePath} loaded successfully.");
             }

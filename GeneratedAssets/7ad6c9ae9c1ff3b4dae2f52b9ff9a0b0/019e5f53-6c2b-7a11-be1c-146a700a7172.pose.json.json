@@ -1,0 +1,12 @@
+{
+    "asset": "7ad6c9ae9c1ff3b4dae2f52b9ff9a0b0",
+    "fileName": "019e5f53-6c2b-7a11-be1c-146a700a7172.pose.json",
+    "prompt": "A natural humanoid turning right in place animation, loops seamlessly.",
+    "negativePrompt": "",
+    "model": "unity-text-to-motion",
+    "modelName": "Text to Motion",
+    "customSeed": 1014407918,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "isTrimmed": false
+}

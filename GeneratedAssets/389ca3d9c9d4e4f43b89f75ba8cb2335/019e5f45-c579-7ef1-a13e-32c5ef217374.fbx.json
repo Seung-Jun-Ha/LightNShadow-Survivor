@@ -1,0 +1,23 @@
+{
+    "asset": "389ca3d9c9d4e4f43b89f75ba8cb2335",
+    "fileName": "019e5f45-c579-7ef1-a13e-32c5ef217374.fbx",
+    "prompt": "A humanoid character with a natural human skin tone, brown hair, wearing a casual blue shirt and dark grey trousers, stylized low poly look.",
+    "negativePrompt": "",
+    "model": "model3d-tripo3-texturing",
+    "modelName": "Tripo 3.0 Texturing",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Texturing",
+    "promptImageReferenceGuid": "",
+    "modelReferenceGuid": "389ca3d9c9d4e4f43b89f75ba8cb2335",
+    "multiviewFrontGuid": "",
+    "multiviewBackGuid": "",
+    "multiviewLeftGuid": "",
+    "multiviewRightGuid": "",
+    "multiviewTopGuid": "",
+    "multiviewBottomGuid": "",
+    "multiviewLeftFrontGuid": "",
+    "multiviewRightFrontGuid": "",
+    "faceLimit": -1
+}

@@ -25,8 +25,11 @@ namespace LightNShadowSurvivor
         private Quaternion currentHandRot;
         private Quaternion currentForearmRot;
 
+        private Camera mainCamera;
+
         private void Start()
         {
+            mainCamera = Camera.main;
             var animator = GetComponentInChildren<Animator>();
             if (animator != null && animator.isHuman)
             {

@@ -1,0 +1,12 @@
+{
+    "asset": "d2efa587fb436bb4c8814f9ff6562554",
+    "fileName": "019e5f63-155f-720a-aa92-49d2682f668a.pose.json",
+    "prompt": "A simple, stylized bouncy turn left animation, loops seamlessly.",
+    "negativePrompt": "",
+    "model": "unity-text-to-motion",
+    "modelName": "Text to Motion",
+    "customSeed": 1122223002,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "isTrimmed": false
+}

@@ -59,32 +59,54 @@ namespace LightNShadowSurvivor
             var spawner = FindFirstObjectByType<MonsterSpawner>();
             if (spawner != null) spawner.StopSpawning();
 
-            // 3. Destroy all monsters
+            // 3. Cleanup all monsters with a delay or dissolve if possible
             var monsters = GameObject.FindObjectsByType<MonsterBase>(FindObjectsSortMode.None);
             foreach (var m in monsters)
             {
-                // In a real game, trigger dissolve here
-                Destroy(m.gameObject);
+                // We can't easily trigger dissolve without a specific method, 
+                // but we can at least stop their AI
+                if (m.TryGetComponent(out UnityEngine.AI.NavMeshAgent agent)) agent.isStopped = true;
+                if (m.TryGetComponent(out GhostAI ai)) ai.enabled = false;
+                Destroy(m.gameObject, 2f); // Fade out then destroy
             }
 
-            // 4. Increase Light
-            if (directionalLight != null)
-            {
-                float startIntensity = directionalLight.intensity;
-                float targetIntensity = 2.0f;
-                float elapsed = 0f;
+            // 4. Sunrise Visuals
+            float elapsed = 0f;
+            float startIntensity = directionalLight != null ? directionalLight.intensity : 0.1f;
+            float targetIntensity = 1.5f;
+            
+            Color nightFogColor = RenderSettings.fogColor;
+            Color dayFogColor = new Color(0.8f, 0.9f, 1.0f); // Bright blue-ish
 
-                while (elapsed < sunriseDuration)
+            while (elapsed < sunriseDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = elapsed / sunriseDuration;
+
+                if (directionalLight != null)
                 {
-                    elapsed += Time.deltaTime;
-                    directionalLight.intensity = Mathf.Lerp(startIntensity, targetIntensity, elapsed / sunriseDuration);
-                    RenderSettings.ambientIntensity = Mathf.Lerp(0.5f, 1.5f, elapsed / sunriseDuration);
-                    yield return null;
+                    directionalLight.intensity = Mathf.Lerp(startIntensity, targetIntensity, t);
+                    directionalLight.color = Color.Lerp(directionalLight.color, Color.white, t);
                 }
+
+                RenderSettings.ambientIntensity = Mathf.Lerp(0.5f, 1.2f, t);
+                RenderSettings.fogColor = Color.Lerp(nightFogColor, dayFogColor, t);
+                RenderSettings.fogDensity = Mathf.Lerp(0.05f, 0.01f, t);
+
+                yield return null;
             }
 
             // 5. Show Result
-            if (resultUI != null) resultUI.SetActive(true);
+            if (resultUI != null)
+            {
+                resultUI.SetActive(true);
+            }
+            else
+            {
+                Debug.LogWarning("[EndingManager] resultUI not found. Searching again...");
+                resultUI = GameObject.Find("Result_UI");
+                if (resultUI != null) resultUI.SetActive(true);
+            }
             
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;

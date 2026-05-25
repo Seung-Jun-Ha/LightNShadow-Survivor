@@ -7,7 +7,8 @@ namespace LightNShadowSurvivor
         MoveSpeed,
         Durability,
         LightIntensity,
-        LightRadius
+        LightRadius,
+        AuraWisp
     }
 
     [CreateAssetMenu(fileName = "NewUpgrade", menuName = "Survivor/UpgradeData")]

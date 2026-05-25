@@ -1,0 +1,12 @@
+{
+    "asset": "75ee57d5b72fad54d8b88f0397faf243",
+    "fileName": "019e5f53-69f8-7b52-8081-0b97e1757363.pose.json",
+    "prompt": "A natural humanoid turning left in place animation, loops seamlessly.",
+    "negativePrompt": "",
+    "model": "unity-text-to-motion",
+    "modelName": "Text to Motion",
+    "customSeed": 1155553981,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "isTrimmed": false
+}

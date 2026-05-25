@@ -39,6 +39,13 @@ namespace LightNShadowSurvivor
             }
         }
 
+        public void Heal(float amount)
+        {
+            currentHealth += amount;
+            currentHealth = Mathf.Min(currentHealth, maxHealth);
+            OnHealthChanged?.Invoke(currentHealth);
+        }
+
         private void Die()
         {
             Debug.Log("Player Died!");

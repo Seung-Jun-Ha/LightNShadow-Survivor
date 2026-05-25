@@ -6,9 +6,15 @@ namespace LightNShadowSurvivor
 {
     public class MonsterDeathHandler : MonoBehaviour
     {
-        [SerializeField] private float fadeDuration = 2f;
+        [SerializeField] private float fadeDuration = 0.5f; // Shortened
         [SerializeField] private string dissolveParameter = "_Dissolve";
         [SerializeField] private Material dissolveMaterialBase;
+        [SerializeField] private GameObject xpOrbPrefab;
+        [SerializeField] private float xpValue = 20f;
+        [SerializeField] private GameObject deathParticlePrefab; // New particle effect
+        [Header("Item Drops")]
+        [SerializeField] private GameObject[] itemPrefabs;
+        [SerializeField] private float itemDropChance = 0.1f;
         
         private MonsterBase monsterBase;
         private GhostAI ai;
@@ -21,14 +27,26 @@ namespace LightNShadowSurvivor
         private void Awake()
         {
             monsterBase = GetComponent<MonsterBase>();
+            if (monsterBase == null) monsterBase = GetComponentInParent<MonsterBase>();
+            
             ai = GetComponent<GhostAI>();
+            if (ai == null) ai = GetComponentInParent<GhostAI>();
+            
             agent = GetComponent<NavMeshAgent>();
+            if (agent == null) agent = GetComponentInParent<NavMeshAgent>();
+            
             animator = GetComponentInChildren<Animator>();
             renderers = GetComponentsInChildren<Renderer>();
         }
 
         private void OnEnable()
         {
+            if (monsterBase == null)
+            {
+                monsterBase = GetComponent<MonsterBase>();
+                if (monsterBase == null) monsterBase = GetComponentInParent<MonsterBase>();
+            }
+
             if (monsterBase != null) monsterBase.OnDeath += HandleDeath;
         }
 
@@ -39,6 +57,10 @@ namespace LightNShadowSurvivor
 
         private void HandleDeath()
         {
+            if (GameStatsManager.Instance != null)
+            {
+                GameStatsManager.Instance.AddKill();
+            }
             StartCoroutine(DeathRoutine());
         }
 
@@ -51,67 +73,32 @@ namespace LightNShadowSurvivor
             Collider col = GetComponent<Collider>();
             if (col != null) col.enabled = false;
 
-            // 2. Play Death Animation
-            if (animator != null)
+            // Spawn death particle immediately
+            if (deathParticlePrefab != null)
             {
-                if (HasState(animator, "dissolve"))
+                Instantiate(deathParticlePrefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
+            }
+
+            // Drop XP Orb
+            if (xpOrbPrefab != null)
+            {
+                GameObject orb = Instantiate(xpOrbPrefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
+                if (orb.TryGetComponent<ExperienceOrb>(out var xp))
                 {
-                    animator.CrossFade(DissolveState, 0.2f);
-                }
-                else if (HasState(animator, "death"))
-                {
-                    animator.CrossFade(Animator.StringToHash("death"), 0.2f);
+                    xp.SetXP(xpValue);
                 }
             }
 
-            // 3. Setup Dissolve Materials
-            var dissolveMaterials = new System.Collections.Generic.List<Material>();
-            foreach (var r in renderers)
+            // Drop Random Item
+            if (itemPrefabs != null && itemPrefabs.Length > 0 && Random.value < itemDropChance)
             {
-                Material[] currentMats = r.materials;
-                for (int i = 0; i < currentMats.Length; i++)
-                {
-                    if (!currentMats[i].HasProperty(dissolveParameter) && dissolveMaterialBase != null)
-                    {
-                        Material newMat = new Material(dissolveMaterialBase);
-                        if (currentMats[i].HasProperty("_MainTex")) newMat.SetTexture("_BaseMap", currentMats[i].GetTexture("_MainTex"));
-                        else if (currentMats[i].HasProperty("_BaseMap")) newMat.SetTexture("_BaseMap", currentMats[i].GetTexture("_BaseMap"));
-                        
-                        if (currentMats[i].HasProperty("_Color")) newMat.SetColor("_Color", currentMats[i].GetColor("_Color"));
-                        else if (currentMats[i].HasProperty("_BaseColor")) newMat.SetColor("_Color", currentMats[i].GetColor("_BaseColor"));
-                        
-                        currentMats[i] = newMat;
-                    }
-                    dissolveMaterials.Add(currentMats[i]);
-                }
-                r.materials = currentMats;
+                GameObject itemPrefab = itemPrefabs[Random.Range(0, itemPrefabs.Length)];
+                Instantiate(itemPrefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
             }
 
-            // 4. Fade Out Visuals
-            float elapsed = 0f;
-            Vector3 startScale = transform.localScale;
-            
-            while (elapsed < fadeDuration)
-            {
-                elapsed += Time.unscaledDeltaTime;
-                float progress = elapsed / fadeDuration;
-                float dissolveVal = 1f - progress;
-
-                // Scale down slightly as well
-                transform.localScale = Vector3.Lerp(startScale, startScale * 0.5f, progress);
-
-                foreach (var mat in dissolveMaterials)
-                {
-                    if (mat.HasProperty(dissolveParameter))
-                    {
-                        mat.SetFloat(dissolveParameter, dissolveVal);
-                    }
-                }
-                yield return null;
-            }
-
-            // 5. Cleanup
+            // Cleanup immediately
             Destroy(gameObject);
+            yield break;
         }
 
         private Material[] GetAllMaterials()

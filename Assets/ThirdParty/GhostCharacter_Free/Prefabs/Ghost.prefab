@@ -296,6 +296,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cc8432056ea41b43b6a7ebc6b30d91a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LightNShadowSurvivor.LightDamageReceiver
+  hitVfxPrefab: {fileID: 4234545127880938927, guid: 77466f25b2199fc4eb7a9da65a5184d2, type: 3}
 --- !u!114 &6387499625573336905
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -311,6 +312,14 @@ MonoBehaviour:
   fadeDuration: 2
   dissolveParameter: _Dissolve
   dissolveMaterialBase: {fileID: 2100000, guid: b9c42eea4bbdf654ca37fe15f1b07284, type: 2}
+  xpOrbPrefab: {fileID: 5274014065625216723, guid: 9272f1310c5262f4c8250bb7ba8b4221, type: 3}
+  xpValue: 20
+  deathParticlePrefab: {fileID: 4234545127880938927, guid: 77466f25b2199fc4eb7a9da65a5184d2, type: 3}
+  itemPrefabs:
+  - {fileID: 3302506064909966716, guid: 997831629a93ade408a67b3778fd80b5, type: 3}
+  - {fileID: 8881194428618587915, guid: 8c51f22647273b5499aaceb96600b017, type: 3}
+  - {fileID: 6765216530356394948, guid: 1c3e26dd478d3b14eb3b7bdaf5fc5b04, type: 3}
+  itemDropChance: 0.15
 --- !u!54 &5116549309676900436
 Rigidbody:
   m_ObjectHideFlags: 0

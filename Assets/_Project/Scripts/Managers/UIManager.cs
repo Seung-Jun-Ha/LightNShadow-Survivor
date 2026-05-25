@@ -16,15 +16,21 @@ namespace LightNShadowSurvivor
         [SerializeField] private Slider hpBar;
         [SerializeField] private Slider expBar;
         [SerializeField] private TextMeshProUGUI levelText;
+        [SerializeField] private TextMeshProUGUI roundText;
 
         [Header("Popups")]
         [SerializeField] private GameObject levelUpPopup;
         [SerializeField] private List<Button> upgradeButtons;
 
+        private PlayerHealth playerHealth;
+        private PlayerExperience playerExp;
+
         private void Awake()
         {
             if (Instance == null) Instance = this;
             else if (Instance != this) Destroy(gameObject);
+
+            if (gameUIPanel != null) gameUIPanel.SetActive(false);
         }
 
         private void Start()
@@ -32,33 +38,50 @@ namespace LightNShadowSurvivor
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.OnStateChanged += HandleStateChanged;
-                // Handle initial state
                 HandleStateChanged(GameManager.Instance.CurrentState);
             }
 
-            // Initialize UI
-            if (gameUIPanel != null) gameUIPanel.SetActive(true);
+            // Force HUD inactive at start if in MainMenu
+            if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.MainMenu)
+            {
+                if (gameUIPanel != null) gameUIPanel.SetActive(false);
+            }
+
             if (levelUpPopup != null) levelUpPopup.SetActive(false);
             
-            // Try to find player and subscribe to health
             StartCoroutine(InitializePlayerRefs());
         }
 
         private IEnumerator InitializePlayerRefs()
         {
-            GameObject player = null;
-            while (player == null)
+            while (PlayerController.Instance == null)
             {
-                player = GameObject.Find("Player_Main");
                 yield return null;
             }
 
-            var health = player.GetComponent<PlayerHealth>();
-            if (health != null)
+            playerHealth = PlayerController.Instance.GetComponent<PlayerHealth>();
+            playerExp = PlayerController.Instance.GetComponent<PlayerExperience>();
+
+            if (playerHealth != null)
             {
-                health.OnHealthChanged += UpdateHP;
-                UpdateHP(health.CurrentHealth);
+                playerHealth.OnHealthChanged += UpdateHP;
+                UpdateHP(playerHealth.CurrentHealth);
             }
+
+            if (playerExp != null)
+            {
+                playerExp.OnXPChanged += UpdateExp;
+                UpdateExp(playerExp.CurrentXP, playerExp.XPToNextLevel);
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (GameManager.Instance != null)
+                GameManager.Instance.OnStateChanged -= HandleStateChanged;
+
+            if (playerHealth != null) playerHealth.OnHealthChanged -= UpdateHP;
+            if (playerExp != null) playerExp.OnXPChanged -= UpdateExp;
         }
 
         private void Update()
@@ -66,11 +89,19 @@ namespace LightNShadowSurvivor
             if (RoundManager.Instance != null)
             {
                 UpdateTimer(RoundManager.Instance.TimeRemaining);
+                UpdateRound(RoundManager.Instance.CurrentRound);
+            }
+
+            if (playerExp != null)
+            {
+                UpdateLevel(playerExp.CurrentLevel);
             }
         }
 
         private void HandleStateChanged(GameState state)
         {
+            Debug.Log($"[UIManager] Handling state: {state}");
+            
             if (levelUpPopup != null)
             {
                 levelUpPopup.SetActive(state == GameState.Upgrade);
@@ -78,8 +109,10 @@ namespace LightNShadowSurvivor
             
             if (gameUIPanel != null)
             {
-                // Keep HUD visible during Round and Upgrade
-                gameUIPanel.SetActive(state == GameState.Round || state == GameState.Upgrade || state == GameState.Intro);
+                // Only show HUD during Round or Upgrade
+                bool showHUD = (state == GameState.Round || state == GameState.Upgrade);
+                gameUIPanel.SetActive(showHUD);
+                Debug.Log($"[UIManager] HUD visibility set to: {showHUD}");
             }
         }
 
@@ -93,16 +126,20 @@ namespace LightNShadowSurvivor
             }
         }
 
+        public void UpdateRound(int round)
+        {
+            if (roundText != null)
+            {
+                roundText.text = $"ROUND {round}";
+            }
+        }
+
         public void UpdateHP(float currentHealth)
         {
-            if (hpBar != null)
+            if (hpBar != null && playerHealth != null)
             {
-                var healthComp = FindFirstObjectByType<PlayerHealth>();
-                if (healthComp != null)
-                {
-                    hpBar.maxValue = healthComp.MaxHealth;
-                    hpBar.value = currentHealth;
-                }
+                hpBar.maxValue = playerHealth.MaxHealth;
+                hpBar.value = currentHealth;
             }
         }
 

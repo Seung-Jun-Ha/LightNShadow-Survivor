@@ -1,0 +1,12 @@
+{
+    "asset": "de946d43547d9694eacfa968b1ce9630",
+    "fileName": "019e5f4c-143c-7927-ac05-31067dffe8af.pose.json",
+    "prompt": "A natural humanoid running animation, loops seamlessly.",
+    "negativePrompt": "",
+    "model": "unity-text-to-motion",
+    "modelName": "Text to Motion",
+    "customSeed": 1079278734,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "isTrimmed": false
+}

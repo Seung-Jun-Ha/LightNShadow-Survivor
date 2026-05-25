@@ -5,40 +5,74 @@ This was created with the help of Assistant, a Unity Artificial Intelligence pro
 using UnityEngine;
 using System.Collections.Generic;
 
-using UnityEngine;
-using System.Collections.Generic;
-
 namespace LightNShadowSurvivor
 {
     public class FlashLightAttack : MonoBehaviour
     {
-        public float damagePerSecond = 100.0f;
-        public float range = 25f;
-        public float angle = 90f;
+        public float damagePerSecond = 5000.0f; // Extremely high for near-instant kill
+        public float range = 40f; 
+        public float angle = 140f; // Very wide angle
         public LayerMask targetLayer;
 
-        private Light lightComponent;
+        public Light lightComponent;
 
-        void Awake()
+        void Start()
         {
-            lightComponent = GetComponent<Light>();
+            Setup();
+        }
+
+        void Setup()
+        {
+            if (lightComponent == null) lightComponent = GetComponent<Light>();
             if (lightComponent == null) lightComponent = GetComponentInChildren<Light>();
-            targetLayer = 1 << LayerMask.NameToLayer("Enemy");
+            
+            int enemyLayer = LayerMask.NameToLayer("Enemy");
+            if (enemyLayer != -1) targetLayer = 1 << enemyLayer;
+            else targetLayer = ~0;
+            
+            if (lightComponent != null)
+            {
+                lightComponent.enabled = true;
+                lightComponent.range = range;
+                lightComponent.spotAngle = angle;
+            }
         }
 
         void Update()
         {
-            Vector3 attackDir = lightComponent != null ? lightComponent.transform.forward : transform.forward;
-            Vector3 attackPos = lightComponent != null ? lightComponent.transform.position : transform.position;
+            HandleInput();
 
-            Collider[] targets = Physics.OverlapSphere(attackPos, range, targetLayer);
+            // Always ensure setup is valid
+            if (targetLayer == 0) Setup();
 
-            foreach (var col in targets)
+            if (lightComponent == null || !lightComponent.enabled) return;
+
+            Vector3 attackPos = lightComponent.transform.position;
+            Vector3 attackDir = lightComponent.transform.forward;
+
+            if (attackDir == Vector3.zero) attackDir = transform.forward;
+
+            Debug.DrawRay(attackPos, attackDir * range, Color.yellow);
+
+            // Using standard OverlapSphere for debugging certainty
+            Collider[] hits = Physics.OverlapSphere(attackPos, range, targetLayer, QueryTriggerInteraction.Collide);
+
+            if (hits.Length > 0 && Time.frameCount % 60 == 0) 
+                Debug.Log($"[FlashLightAttack] OverlapSphere found {hits.Length} enemies in range.");
+
+            foreach (var col in hits)
             {
+                if (col == null) continue;
+
                 Vector3 targetPoint = col.bounds.center;
                 Vector3 dirToTarget = (targetPoint - attackPos).normalized;
+                float angleToTarget = Vector3.Angle(attackDir, dirToTarget);
                 
-                if (Vector3.Angle(attackDir, dirToTarget) < angle * 0.5f)
+                // Root-based angle check as backup
+                float angleToRoot = Vector3.Angle(attackDir, (col.transform.position - attackPos).normalized);
+                float minAngle = Mathf.Min(angleToTarget, angleToRoot);
+                
+                if (minAngle < angle * 0.5f)
                 {
                     var receiver = col.GetComponent<LightDamageReceiver>();
                     if (receiver == null) receiver = col.GetComponentInParent<LightDamageReceiver>();
@@ -46,7 +80,24 @@ namespace LightNShadowSurvivor
                     if (receiver != null)
                     {
                         receiver.TakeLightDamage(damagePerSecond * Time.deltaTime);
+                        if (Time.frameCount % 15 == 0) 
+                            Debug.Log($"[FlashLightAttack] DAMAGING {col.name} (Angle: {minAngle:F1})");
                     }
+                    else if (Time.frameCount % 60 == 0)
+                    {
+                        Debug.LogWarning($"[FlashLightAttack] {col.name} has no LightDamageReceiver!");
+                    }
+                }
+            }
+        }
+
+        private void HandleInput()
+        {
+            if (UnityEngine.InputSystem.Mouse.current != null && UnityEngine.InputSystem.Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                if (lightComponent != null)
+                {
+                    lightComponent.enabled = !lightComponent.enabled;
                 }
             }
         }

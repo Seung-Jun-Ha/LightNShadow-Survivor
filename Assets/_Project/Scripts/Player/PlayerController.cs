@@ -16,8 +16,11 @@ namespace LightNShadowSurvivor
         private InputAction moveAction;
         private Vector2 moveInput;
 
+        public static PlayerController Instance { get; private set; }
+
         private void Awake()
         {
+            Instance = this;
             rb = GetComponent<Rigidbody>();
             animator = GetComponentInChildren<Animator>();
             if (animator != null)

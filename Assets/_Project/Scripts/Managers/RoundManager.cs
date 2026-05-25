@@ -43,21 +43,10 @@ namespace LightNShadowSurvivor
 
         private void HandleStateChanged(GameState state)
         {
-            if (state == GameState.Intro)
-            {
-                // Auto start round 1 for now
-                StartCoroutine(DelayedStart());
-            }
-            else if (state == GameState.Round)
+            if (state == GameState.Round)
             {
                 StartRoundTimer();
             }
-        }
-
-        private IEnumerator DelayedStart()
-        {
-            yield return new WaitForSeconds(2f);
-            GameManager.Instance.StartRound();
         }
 
         private void StartRoundTimer()

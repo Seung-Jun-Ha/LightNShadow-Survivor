@@ -76,11 +76,10 @@ namespace LightNShadowSurvivor
 
         private void Start()
         {
-            GameObject playerObj = GameObject.Find("Player_Main");
-            if (playerObj != null)
+            if (PlayerController.Instance != null)
             {
-                player = playerObj.transform;
-                playerHealth = playerObj.GetComponent<PlayerHealth>();
+                player = PlayerController.Instance.transform;
+                playerHealth = PlayerController.Instance.GetComponent<PlayerHealth>();
             }
 
             // Ensure agent is on NavMesh
@@ -95,7 +94,15 @@ namespace LightNShadowSurvivor
 
         private void Update()
         {
-            if (player == null) return;
+            if (player == null)
+            {
+                if (PlayerController.Instance != null)
+                {
+                    player = PlayerController.Instance.transform;
+                    playerHealth = PlayerController.Instance.GetComponent<PlayerHealth>();
+                }
+                if (player == null) return;
+            }
 
             float distanceToPlayer = Vector3.Distance(transform.position, player.position);
 
@@ -169,7 +176,10 @@ namespace LightNShadowSurvivor
                 }
             }
             
-            agent.speed = originalSpeed * slowFactor;
+            if (agent.isOnNavMesh)
+            {
+                agent.speed = originalSpeed * slowFactor;
+            }
         }
 
         private void HandleSlowEffect()
@@ -180,14 +190,17 @@ namespace LightNShadowSurvivor
                 if (slowTimer <= 0)
                 {
                     isSlowing = false;
-                    agent.speed = originalSpeed;
+                    if (agent.isOnNavMesh)
+                    {
+                        agent.speed = originalSpeed;
+                    }
                 }
             }
         }
 
         private void UpdateAnimation()
         {
-            if (animator == null) return;
+            if (animator == null || !agent.isOnNavMesh) return;
 
             bool isMoving = agent.velocity.magnitude > 0.1f && !agent.isStopped;
             

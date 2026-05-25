@@ -1,14 +1,16 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 namespace LightNShadowSurvivor
 {
     public class UpgradeUIController : MonoBehaviour
     {
         [SerializeField] private GameObject upgradePanel;
-        [SerializeField] private Button speedButton;
-        [SerializeField] private Button damageButton;
-        [SerializeField] private Button healthButton;
+        [SerializeField] private Transform cardContainer;
+        [SerializeField] private GameObject cardPrefab;
+
+        private List<GameObject> spawnedCards = new List<GameObject>();
 
         private void Start()
         {
@@ -16,10 +18,6 @@ namespace LightNShadowSurvivor
             {
                 GameManager.Instance.OnStateChanged += HandleStateChanged;
             }
-
-            speedButton.onClick.AddListener(() => UpgradeStat("Speed"));
-            damageButton.onClick.AddListener(() => UpgradeStat("Damage"));
-            healthButton.onClick.AddListener(() => UpgradeStat("Health"));
 
             upgradePanel.SetActive(false);
         }
@@ -32,35 +30,50 @@ namespace LightNShadowSurvivor
 
         private void HandleStateChanged(GameState state)
         {
-            upgradePanel.SetActive(state == GameState.Upgrade);
             if (state == GameState.Upgrade)
             {
-                Cursor.visible = true;
-                Cursor.lockState = CursorLockMode.None;
+                ShowUpgradeSelection();
             }
-        }
-
-        private void UpgradeStat(string statName)
-        {
-            Debug.Log($"Upgrading {statName}");
-            
-            switch (statName)
+            else
             {
-                case "Speed":
-                    var pc = FindFirstObjectByType<PlayerController>();
-                    if (pc != null) pc.MoveSpeed += 1f;
-                    break;
-                case "Damage":
-                    var attack = FindFirstObjectByType<FlashLightAttack>();
-                    if (attack != null) attack.damagePerSecond += 5f;
-                    break;
-                case "Health":
-                    var health = FindFirstObjectByType<PlayerHealth>();
-                    if (health != null) health.IncreaseMaxHealth(20f);
-                    break;
+                upgradePanel.SetActive(false);
+                ClearCards();
             }
-
-            RoundManager.Instance.ProceedToNextRound();
         }
-}
+
+        private void ShowUpgradeSelection()
+        {
+            upgradePanel.SetActive(true);
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+
+            ClearCards();
+
+            if (UpgradeManager.Instance != null)
+            {
+                var upgrades = UpgradeManager.Instance.GetRandomUpgrades();
+                foreach (var data in upgrades)
+                {
+                    GameObject cardObj = Instantiate(cardPrefab, cardContainer);
+                    spawnedCards.Add(cardObj);
+
+                    if (cardObj.TryGetComponent<UpgradeCardUI>(out var cardUI))
+                    {
+                        cardUI.Setup(data, (selectedData) => {
+                            UpgradeManager.Instance.ApplyUpgrade(selectedData);
+                        });
+                    }
+                }
+            }
+        }
+
+        private void ClearCards()
+        {
+            foreach (var card in spawnedCards)
+            {
+                if (card != null) Destroy(card);
+            }
+            spawnedCards.Clear();
+        }
+    }
 }

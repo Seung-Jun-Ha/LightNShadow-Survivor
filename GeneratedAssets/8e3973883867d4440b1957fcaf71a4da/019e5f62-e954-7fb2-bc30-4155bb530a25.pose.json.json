@@ -1,0 +1,12 @@
+{
+    "asset": "8e3973883867d4440b1957fcaf71a4da",
+    "fileName": "019e5f62-e954-7fb2-bc30-4155bb530a25.pose.json",
+    "prompt": "A simple, stylized bouncy idle animation for a low-poly character, subtle bobbing motion, loops seamlessly.",
+    "negativePrompt": "",
+    "model": "unity-text-to-motion",
+    "modelName": "Text to Motion",
+    "customSeed": 1793784441,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "isTrimmed": false
+}
