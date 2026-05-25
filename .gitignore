@@ -41,6 +41,24 @@
 
 # Visual Studio cache directory
 .vs/
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Codex local/runtime files
+codex/settings.local.json
+AGENTS.local.md
+production/session-logs/
+docs/consistency-failures.md
+
+# Internal planning and eval tooling
+expansions/
+marrow/
 
 # Gradle cache directory
 .gradle/
@@ -105,3 +123,28 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# Additional build outputs and dependency caches
+build/
+builds/
+bin/
+obj/
+out/
+dist/
+node_modules/
+.npm/
+__pycache__/
+*.pyc
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Secrets and local environment
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+credentials.json
+secrets.json

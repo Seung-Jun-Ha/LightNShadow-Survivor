@@ -1,0 +1,62 @@
+﻿# Technical Requirement ID Registry
+#
+# PURPOSE: Persistent, stable IDs for every GDD technical requirement.
+# Prevents TR-ID renumbering across /architecture-review runs, which would
+# break story references.
+#
+# RULES:
+#   - IDs are PERMANENT. Never renumber, never delete (use status: deprecated).
+#   - Add new entries only at the END of each system's list.
+#   - When a GDD requirement is reworded (same intent): update `requirement`
+#     text and add a `revised` date. The ID stays the same.
+#   - When a requirement is removed from the GDD: set status: deprecated.
+#   - When a requirement is split or replaced: set status: superseded-by with
+#     the new TR-ID(s).
+#
+# WRITTEN BY: /architecture-review (appends new entries, never overwrites)
+# READ BY:    /create-stories (embed IDs in stories)
+#             /story-done (look up current requirement text at review time)
+#             /story-readiness (validate TR-ID exists and is active)
+#
+# ID FORMAT: TR-[system-slug]-[NNN]
+#   system-slug = short slug matching the GDD system name
+#   NNN = three-digit zero-padded sequence per system, starting at 001
+#
+# STATUS VALUES: active | deprecated | superseded-by: TR-[system]-NNN
+
+version: 1
+last_updated: ""
+
+requirements: []
+
+# --- EXAMPLE ENTRIES (remove when first real entries are added) ---
+#
+# - id: TR-combat-001
+#   system: combat
+#   gdd: design/gdd/combat-system.md
+#   requirement: "Player takes damage from enemies based on attack power minus defence"
+#   created: 2026-03-10
+#   revised: ""
+#   status: active
+#
+# - id: TR-combat-002
+#   system: combat
+#   gdd: design/gdd/combat-system.md
+#   requirement: "Combo window timing is 0.4 seconds between hits"
+#   created: 2026-03-10
+#   revised: "2026-04-01"
+#   status: active
+#
+# - id: TR-combat-003
+#   system: combat
+#   gdd: design/gdd/combat-system.md
+#   requirement: "Old damage formula using raw stats"
+#   created: 2026-03-10
+#   revised: ""
+#   status: superseded-by: TR-combat-001
+# 한국어 설명
+# 이 파일은 Codex Game Studio Framework에서 '.\docs\architecture\tr-registry.yaml' 경로가 담당하는 원문 지침과 참조 정보를 보존합니다.
+# Codex 환경에서는 AGENTS.md, codex/ 지식 베이스, Unity 우선 엔진 참조를 기준으로 읽으면 됩니다.
+# 핵심 결정: 원문은 유지하고, Codex 기준 경로와 Unity 제작 흐름을 함께 설명합니다.
+
+

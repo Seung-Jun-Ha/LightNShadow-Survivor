@@ -1,0 +1,87 @@
+﻿# Security Policy
+
+## Supported Versions
+
+Only the `main` branch receives security fixes. Forks and older releases are
+not supported.
+
+## Reporting a Vulnerability
+
+**Do not report security vulnerabilities through public GitHub issues.**
+
+Use GitHub's private vulnerability reporting instead:
+
+**[Report a vulnerability ??(https://github.com/Donchitos/Codex-Code-Game-Studios/security/advisories/new)**
+
+Include as much detail as possible:
+- Description of the vulnerability and what it affects
+- Steps to reproduce
+- Potential impact and attack scenarios
+- Any suggested mitigations
+
+**What to expect:**
+- Acknowledgment within **48 hours**
+- Status update within **7 days**
+- Resolution within **90 days** for confirmed vulnerabilities
+
+## What Is In Scope
+
+CCGS is a **local development tool** ??it installs shell hooks and coordinates
+AI agents that run directly on your machine. Security issues are primarily about
+contributed code that executes in users' environments without their awareness.
+
+### High Severity
+- Hooks (`codex/hooks/*.sh`) that execute malicious or undisclosed shell
+  commands on user machines
+- Skills or agents that exfiltrate environment variables, API keys, or secrets
+- Prompt injection via skill or agent definitions that causes Codex to bypass
+  safety measures or take unauthorized destructive actions
+- Contributions that silently alter behavior in ways users cannot audit
+
+### Medium Severity
+- Skills that make undisclosed outbound network requests
+- Agent definitions that escalate permissions or bypass user confirmation prompts
+- Hook patterns that behave differently across platforms to conceal behavior
+- Skills that write outside their documented scope without an explicit user
+  approval step
+
+### Out of Scope
+- The behavior of Codex or the Codex CLI itself
+  (report to [Anthropic](https://www.anthropic.com/security))
+- Bugs in the user's Codex installation or editor extension
+- Theoretical vulnerabilities with no realistic attack path
+- Issues requiring physical access to the user's machine
+
+## Security Guidelines for Contributors
+
+When contributing hooks, skills, or agents:
+
+- **Hooks must be POSIX-compatible** ??use `grep -E`, not `grep -P`; avoid
+  platform-specific syntax that behaves differently across operating systems
+- **No silent network calls** from hooks or skills unless explicitly documented
+  and opt-in by the user
+- **No reading secrets or environment variables** beyond what is minimally
+  required and clearly documented in the skill's header
+- **Skills must not write outside their documented scope** without an explicit
+  user confirmation step
+
+## Disclosure Policy
+
+We follow a **90-day coordinated disclosure** timeline:
+
+1. You submit the vulnerability privately
+2. We acknowledge within 48 hours
+3. We confirm and assess severity within 7 days
+4. We develop and test a fix
+5. We notify you before any public disclosure
+6. Public disclosure happens after the fix ships, or at 90 days ??whichever
+   comes first
+
+We credit reporters in release notes unless you prefer to remain anonymous.
+---
+
+## 한국어 설명
+
+이 파일은 Codex Game Studio Framework에서 '.\SECURITY.md' 경로가 담당하는 원문 지침과 참조 정보를 보존합니다. Codex 환경에서는 AGENTS.md, codex/ 지식 베이스, Unity 우선 엔진 참조를 기준으로 읽으면 됩니다. 핵심 결정은 원문을 삭제하지 않고, Codex 기준 경로와 Unity 제작 흐름을 함께 이해하도록 보조 설명을 추가하는 것입니다.
+
+

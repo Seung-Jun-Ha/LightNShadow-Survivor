@@ -1,0 +1,133 @@
+﻿# Hook Input/Output Schemas
+
+This documents the JSON payloads each Codex hook receives on stdin for every event type.
+
+## PreToolUse
+
+Fired before a tool is executed. Can **allow** (exit 0) or **block** (exit 2).
+
+### PreToolUse: Bash
+
+```json
+{
+  "tool_name": "Bash",
+  "tool_input": {
+    "command": "git commit -m 'feat: add player health system'",
+    "description": "Commit changes with message",
+    "timeout": 120000
+  }
+}
+```
+
+### PreToolUse: Write
+
+```json
+{
+  "tool_name": "Write",
+  "tool_input": {
+    "file_path": "src/gameplay/health.gd",
+    "content": "extends Node\n..."
+  }
+}
+```
+
+### PreToolUse: Edit
+
+```json
+{
+  "tool_name": "Edit",
+  "tool_input": {
+    "file_path": "src/gameplay/health.gd",
+    "old_string": "var health = 100",
+    "new_string": "var health: int = 100"
+  }
+}
+```
+
+### PreToolUse: Read
+
+```json
+{
+  "tool_name": "Read",
+  "tool_input": {
+    "file_path": "src/gameplay/health.gd"
+  }
+}
+```
+
+## PostToolUse
+
+Fired after a tool completes. **Cannot block** (exit code ignored for blocking). Stderr messages are shown as warnings.
+
+### PostToolUse: Write
+
+```json
+{
+  "tool_name": "Write",
+  "tool_input": {
+    "file_path": "assets/data/enemy_stats.json",
+    "content": "{\"goblin\": {\"health\": 50}}"
+  },
+  "tool_output": "File written successfully"
+}
+```
+
+### PostToolUse: Edit
+
+```json
+{
+  "tool_name": "Edit",
+  "tool_input": {
+    "file_path": "assets/data/enemy_stats.json",
+    "old_string": "\"health\": 50",
+    "new_string": "\"health\": 75"
+  },
+  "tool_output": "File edited successfully"
+}
+```
+
+## SubagentStart
+
+Fired when a subagent is spawned via the Task tool.
+
+```json
+{
+  "agent_name": "game-designer",
+  "model": "GPT-5.4",
+  "description": "Design the combat healing mechanic"
+}
+```
+
+## SessionStart
+
+Fired when a Codex session begins. **No stdin input** ??the hook just runs and its stdout is shown to Codex as context.
+
+## PreCompact
+
+Fired before context window compression. **No stdin input** ??the hook runs to save state before compression occurs.
+
+## Stop
+
+Fired when the Codex session ends. **No stdin input** ??the hook runs for cleanup and logging.
+
+## Exit Code Reference
+
+| Exit Code | Meaning | Applicable Events |
+|-----------|---------|-------------------|
+| 0 | Allow / Success | All events |
+| 2 | Block (stderr shown to Codex) | PreToolUse only |
+| Other | Treated as error, tool proceeds | All events |
+
+## Notes
+
+- Hooks receive JSON on **stdin** (pipe). Use `INPUT=$(cat)` to capture.
+- Parse with `jq` if available, fall back to `grep` for cross-platform compatibility.
+- On Windows, `grep -P` (Perl regex) is often unavailable. Use `grep -E` (POSIX extended) instead.
+- Path separators may be `\` on Windows. Normalize with `sed 's|\\|/|g'` when comparing paths.
+---
+
+## 한국어 설명
+
+이 파일은 Codex Game Studio Framework에서 '.\codex\docs\hooks-reference\hook-input-schemas.md' 경로가 담당하는 원문 지침과 참조 정보를 보존합니다. Codex 환경에서는 AGENTS.md, codex/ 지식 베이스, Unity 우선 엔진 참조를 기준으로 읽으면 됩니다. 핵심 결정은 원문을 삭제하지 않고, Codex 기준 경로와 Unity 제작 흐름을 함께 이해하도록 보조 설명을 추가하는 것입니다.
+
+

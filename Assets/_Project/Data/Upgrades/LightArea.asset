@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b336e174ea7a9734dad1668f67620b84, type: 3}
+  m_Name: LightArea
+  m_EditorClassIdentifier: Assembly-CSharp::LightNShadowSurvivor.UpgradeData
+  upgradeName: LightArea
+  description: Increase flashlight range and angle
+  icon: {fileID: 0}
+  upgradeType: 3
+  increaseValue: 5

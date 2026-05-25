@@ -1,0 +1,161 @@
+﻿{
+    "$schema":  "https://json.schemastore.org/codex-workspace-settings.json",
+    "statusLine":  {
+                       "type":  "command",
+                       "command":  "bash codex/statusline.sh"
+                   },
+    "permissions":  {
+                        "allow":  [
+                                      "Bash(git status*)",
+                                      "Bash(git diff*)",
+                                      "Bash(git log*)",
+                                      "Bash(git branch*)",
+                                      "Bash(git rev-parse*)",
+                                      "Bash(ls *)",
+                                      "Bash(dir *)",
+                                      "Bash(python -m json.tool*)",
+                                      "Bash(python -m pytest*)",
+                                      "Bash(py -m pytest*)"
+                                  ],
+                        "deny":  [
+                                     "Bash(rm -rf *)",
+                                     "Bash(git push --force*)",
+                                     "Bash(git push -f *)",
+                                     "Bash(git reset --hard*)",
+                                     "Bash(git clean -f*)",
+                                     "Bash(sudo *)",
+                                     "Bash(chmod 777*)",
+                                     "Bash(*\u003e.env*)",
+                                     "Bash(cat *.env*)",
+                                     "Bash(type *.env*)",
+                                     "Read(**/.env*)"
+                                 ]
+                    },
+    "hooks":  {
+                  "SessionStart":  [
+                                       {
+                                           "matcher":  "",
+                                           "hooks":  [
+                                                         {
+                                                             "type":  "command",
+                                                             "command":  "bash codex/hooks/session-start.sh",
+                                                             "timeout":  10
+                                                         },
+                                                         {
+                                                             "type":  "command",
+                                                             "command":  "bash codex/hooks/detect-gaps.sh",
+                                                             "timeout":  10
+                                                         }
+                                                     ]
+                                       }
+                                   ],
+                  "PreToolUse":  [
+                                     {
+                                         "matcher":  "Bash",
+                                         "hooks":  [
+                                                       {
+                                                           "type":  "command",
+                                                           "command":  "bash codex/hooks/validate-commit.sh",
+                                                           "timeout":  15
+                                                       },
+                                                       {
+                                                           "type":  "command",
+                                                           "command":  "bash codex/hooks/validate-push.sh",
+                                                           "timeout":  10
+                                                       }
+                                                   ]
+                                     }
+                                 ],
+                  "PostToolUse":  [
+                                      {
+                                          "matcher":  "Write|Edit",
+                                          "hooks":  [
+                                                        {
+                                                            "type":  "command",
+                                                            "command":  "bash codex/hooks/validate-assets.sh",
+                                                            "timeout":  10
+                                                        },
+                                                        {
+                                                            "type":  "command",
+                                                            "command":  "bash codex/hooks/validate-skill-change.sh",
+                                                            "timeout":  5
+                                                        }
+                                                    ]
+                                      }
+                                  ],
+                  "Notification":  [
+                                       {
+                                           "matcher":  "",
+                                           "hooks":  [
+                                                         {
+                                                             "type":  "command",
+                                                             "command":  "bash codex/hooks/notify.sh",
+                                                             "timeout":  10
+                                                         }
+                                                     ]
+                                       }
+                                   ],
+                  "PreCompact":  [
+                                     {
+                                         "matcher":  "",
+                                         "hooks":  [
+                                                       {
+                                                           "type":  "command",
+                                                           "command":  "bash codex/hooks/pre-compact.sh",
+                                                           "timeout":  10
+                                                       }
+                                                   ]
+                                     }
+                                 ],
+                  "PostCompact":  [
+                                      {
+                                          "matcher":  "",
+                                          "hooks":  [
+                                                        {
+                                                            "type":  "command",
+                                                            "command":  "bash codex/hooks/post-compact.sh",
+                                                            "timeout":  10
+                                                        }
+                                                    ]
+                                      }
+                                  ],
+                  "Stop":  [
+                               {
+                                   "matcher":  "",
+                                   "hooks":  [
+                                                 {
+                                                     "type":  "command",
+                                                     "command":  "bash codex/hooks/session-stop.sh",
+                                                     "timeout":  10
+                                                 }
+                                             ]
+                               }
+                           ],
+                  "SubagentStart":  [
+                                        {
+                                            "matcher":  "",
+                                            "hooks":  [
+                                                          {
+                                                              "type":  "command",
+                                                              "command":  "bash codex/hooks/log-agent.sh",
+                                                              "timeout":  5
+                                                          }
+                                                      ]
+                                        }
+                                    ],
+                  "SubagentStop":  [
+                                       {
+                                           "matcher":  "",
+                                           "hooks":  [
+                                                         {
+                                                             "type":  "command",
+                                                             "command":  "bash codex/hooks/log-agent-stop.sh",
+                                                             "timeout":  5
+                                                         }
+                                                     ]
+                                       }
+                                   ]
+              },
+    "_korean_explanation":  "이 파일은 Codex Game Studio Framework에서 \u0027.Codex\\settings.json\u0027 경로가 담당하는 원문 지침과 참조 정보를 보존합니다. Codex 환경에서는 AGENTS.md, codex/ 지식 베이스, Unity 우선 엔진 참조를 기준으로 읽으면 됩니다.",
+    "한국어 설명":  "이 JSON 파일은 Codex 환경 설정과 훅 참조를 보존합니다. Codex에서는 AGENTS.md와 codex/ 경로를 우선 기준으로 사용합니다."
+}
