@@ -27,7 +27,12 @@ namespace LightNShadowSurvivor
 
         private void Start()
         {
-            GameManager.Instance.OnStateChanged += HandleStateChanged;
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.OnStateChanged += HandleStateChanged;
+                // Handle initial state
+                HandleStateChanged(GameManager.Instance.CurrentState);
+            }
         }
 
         private void OnDestroy()

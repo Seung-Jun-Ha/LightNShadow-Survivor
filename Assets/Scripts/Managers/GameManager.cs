@@ -44,8 +44,10 @@ namespace LightNShadowSurvivor
 
         public void ChangeState(GameState newState)
         {
+            if (currentState == newState && newState != GameState.Round) return; // Allow re-entering Round for next waves
+            
             currentState = newState;
-            Debug.Log($"Game State Changed to: {newState}");
+            Debug.Log($"[GameManager] State changed to: {newState}");
             
             switch (newState)
             {
@@ -61,7 +63,7 @@ namespace LightNShadowSurvivor
                 case GameState.Ending:
                     break;
                 case GameState.GameOver:
-                    Time.timeScale = 0f;
+                    // Time.timeScale = 0f; // Let the death handler finish its work
                     break;
             }
 

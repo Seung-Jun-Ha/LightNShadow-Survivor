@@ -10,8 +10,8 @@ namespace LightNShadowSurvivor
         [SerializeField] private List<GameObject> round1Monsters;
         [SerializeField] private List<GameObject> round2Monsters;
         [SerializeField] private List<GameObject> round3Monsters;
-        [SerializeField] private float spawnRadius = 40f;
-        [SerializeField] private float spawnInterval = 6f;
+        [SerializeField] private float spawnRadius = 15f; // Reduced from 40f
+        [SerializeField] private float spawnInterval = 2f; // Reduced from 6f
 
         private Transform player;
         private int currentRound = 1;
@@ -20,16 +20,32 @@ namespace LightNShadowSurvivor
 
         private void Start()
         {
-            GameObject playerObj = GameObject.Find("Player_Main");
-            if (playerObj != null)
-            {
-                player = playerObj.transform;
-            }
+            FindPlayer();
 
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.OnStateChanged += HandleStateChanged;
+                HandleStateChanged(GameManager.Instance.CurrentState);
             }
+        }
+
+        private void FindPlayer()
+        {
+            GameObject playerObj = GameObject.Find("Player_Main");
+            if (playerObj != null)
+            {
+                player = playerObj.transform;
+                Debug.Log("[MonsterSpawner] Player found and assigned.");
+            }
+            else
+            {
+                Debug.LogWarning("[MonsterSpawner] Player_Main NOT found!");
+            }
+        }
+
+        private void Update()
+        {
+            if (player == null) FindPlayer();
         }
 
         private void OnDestroy()
@@ -53,8 +69,8 @@ namespace LightNShadowSurvivor
         public void SetRound(int round)
         {
             currentRound = round;
-            // Adjusted base (6f) and scaling to maintain 20% increase compared to 5f base
-            spawnInterval = Mathf.Max(1.2f, 6f - (round - 1) * 1.8f);
+            // Faster spawn rate: round 1 starts at 3s, decreases significantly
+            spawnInterval = Mathf.Max(0.5f, 3f - (round - 1) * 1.0f);
         }
 
         public void StartSpawning()
@@ -84,6 +100,7 @@ namespace LightNShadowSurvivor
 
         private void SpawnMonster()
         {
+            Debug.Log("[MonsterSpawner] Attempting to spawn a monster...");
             List<GameObject> monsterPool;
             switch (currentRound)
             {
@@ -92,11 +109,29 @@ namespace LightNShadowSurvivor
                 default: monsterPool = round3Monsters; break;
             }
 
-            if (monsterPool == null || monsterPool.Count == 0) return;
+            if (monsterPool == null || monsterPool.Count == 0)
+            {
+                Debug.LogWarning("[MonsterSpawner] Monster pool is empty!");
+                return;
+            }
 
             GameObject prefab = monsterPool[Random.Range(0, monsterPool.Count)];
             Vector3 spawnPos = GetRandomPositionAroundPlayer();
-            Instantiate(prefab, spawnPos, Quaternion.identity);
+            Debug.Log($"[MonsterSpawner] Calculated spawn position: {spawnPos}");
+            
+            GameObject spawned = Instantiate(prefab, spawnPos, Quaternion.identity);
+            Debug.Log($"[MonsterSpawner] Successfully instantiated {spawned.name}");
+            
+            // Force layer to Enemy
+            int enemyLayer = LayerMask.NameToLayer("Enemy");
+            if (enemyLayer != -1)
+            {
+                spawned.layer = enemyLayer;
+                foreach (Transform t in spawned.GetComponentsInChildren<Transform>(true))
+                {
+                    t.gameObject.layer = enemyLayer;
+                }
+            }
         }
 
         private Vector3 GetRandomPositionAroundPlayer()

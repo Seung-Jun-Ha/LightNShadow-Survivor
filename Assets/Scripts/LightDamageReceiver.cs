@@ -21,7 +21,17 @@ namespace LightNShadowSurvivor
         public void TakeLightDamage(float damage)
         {
             if (monsterBase != null)
+            {
                 monsterBase.ModifyHealth(-damage);
+                // Debug.Log($"[LightDamageReceiver] {gameObject.name} taking damage: {damage}");
+            }
+            else
+            {
+                Debug.LogError($"[LightDamageReceiver] {gameObject.name} has no MonsterBase component!");
+                monsterBase = GetComponent<MonsterBase>();
+                if (monsterBase == null) monsterBase = GetComponentInParent<MonsterBase>();
+                if (monsterBase != null) monsterBase.ModifyHealth(-damage);
+            }
             
             if (ai != null)
                 ai.ApplySlow(); 

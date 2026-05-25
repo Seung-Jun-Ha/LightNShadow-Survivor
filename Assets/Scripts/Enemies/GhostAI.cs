@@ -46,6 +46,26 @@ namespace LightNShadowSurvivor
                 cc.enabled = false;
             }
 
+            // --- FIX: Ensure active collider and rigidbody for hit detection ---
+            if (GetComponent<Collider>() == null || !GetComponent<Collider>().enabled)
+            {
+                var col = gameObject.AddComponent<CapsuleCollider>();
+                col.center = new Vector3(0, 1, 0);
+                col.height = 2f;
+                col.radius = 0.5f;
+            }
+
+            if (GetComponent<Rigidbody>() == null)
+            {
+                var rb = gameObject.AddComponent<Rigidbody>();
+                rb.isKinematic = true;
+                rb.useGravity = false;
+            }
+
+            // Force layer to Enemy
+            gameObject.layer = LayerMask.NameToLayer("Enemy");
+            // ------------------------------------------------------------------
+
             // Usually the animator is on the visual object
             if (animator != null) visualRoot = animator.transform;
             

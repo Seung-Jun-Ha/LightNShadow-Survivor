@@ -40,6 +40,8 @@ namespace LightNShadowSurvivor
         {
             if (isDead) return;
 
+            Debug.Log($"[MonsterBase] {gameObject.name} modified by {amount}. Current HP: {currentHealth}");
+
             // Damage is negative amount
             if (amount < 0)
             {
@@ -63,6 +65,7 @@ namespace LightNShadowSurvivor
 
             if (currentHealth <= 0)
             {
+                Debug.Log($"[MonsterBase] {gameObject.name} HP reached 0. Triggering Die().");
                 Die();
             }
         }
@@ -71,8 +74,11 @@ namespace LightNShadowSurvivor
         {
             if (isDead) return;
             isDead = true;
+            Debug.Log($"[MonsterBase] {gameObject.name} logic marked as DEAD. Invoking OnDeath.");
             OnDeath?.Invoke();
-            Destroy(gameObject, 0.1f);
+            
+            // Fallback destroy if no handler takes over
+            Destroy(gameObject, 5f);
         }
     }
 }

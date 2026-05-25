@@ -5,91 +5,51 @@ This was created with the help of Assistant, a Unity Artificial Intelligence pro
 using UnityEngine;
 using System.Collections.Generic;
 
+using UnityEngine;
+using System.Collections.Generic;
+
 namespace LightNShadowSurvivor
 {
     public class FlashLightAttack : MonoBehaviour
     {
-        public float damagePerSecond = 66.7f;
-        public float range = 15f;
-        public float angle = 45f;
+        public float damagePerSecond = 100.0f;
+        public float range = 25f;
+        public float angle = 90f;
         public LayerMask targetLayer;
-        public LayerMask obstacleLayer;
 
-        [Header("Debug")]
-        [SerializeField] private bool showGizmos = true;
+        private Light lightComponent;
+
+        void Awake()
+        {
+            lightComponent = GetComponent<Light>();
+            if (lightComponent == null) lightComponent = GetComponentInChildren<Light>();
+            targetLayer = 1 << LayerMask.NameToLayer("Enemy");
+        }
 
         void Update()
         {
-            DetectAndDamage();
-        }
+            Vector3 attackDir = lightComponent != null ? lightComponent.transform.forward : transform.forward;
+            Vector3 attackPos = lightComponent != null ? lightComponent.transform.position : transform.position;
 
-        private void DetectAndDamage()
-        {
-            // Use OverlapSphere to get potential targets
-            Collider[] targets = Physics.OverlapSphere(transform.position, range, targetLayer);
+            Collider[] targets = Physics.OverlapSphere(attackPos, range, targetLayer);
 
             foreach (var col in targets)
             {
-                // Get the center of the collider for better accuracy
                 Vector3 targetPoint = col.bounds.center;
-                Vector3 dirToTarget = (targetPoint - transform.position).normalized;
-                float distToTarget = Vector3.Distance(transform.position, targetPoint);
+                Vector3 dirToTarget = (targetPoint - attackPos).normalized;
                 
-                // 1. Distance check (already partially handled by OverlapSphere, but good for precise bounds)
-                if (distToTarget > range) continue;
-
-                // 2. Angle check
-                float angleToTarget = Vector3.Angle(transform.forward, dirToTarget);
-                if (angleToTarget < angle * 0.5f)
+                if (Vector3.Angle(attackDir, dirToTarget) < angle * 0.5f)
                 {
-                    // 3. Obstacle check
-                    // We raycast to the target point. 
-                    // Note: We use distToTarget - 0.1f to avoid hitting the ground behind the monster
-                    if (!Physics.Raycast(transform.position, dirToTarget, distToTarget, obstacleLayer))
+                    var receiver = col.GetComponent<LightDamageReceiver>();
+                    if (receiver == null) receiver = col.GetComponentInParent<LightDamageReceiver>();
+                    
+                    if (receiver != null)
                     {
-                        if (col.TryGetComponent(out LightDamageReceiver receiver))
-                        {
-                            receiver.TakeLightDamage(damagePerSecond * Time.deltaTime);
-                            
-                            #if UNITY_EDITOR
-                            Debug.DrawLine(transform.position, targetPoint, Color.red);
-                            #endif
-                        }
-                        else
-                        {
-                            // Try parent in case script is on root but collider on child
-                            var parentReceiver = col.GetComponentInParent<LightDamageReceiver>();
-                            if (parentReceiver != null)
-                            {
-                                parentReceiver.TakeLightDamage(damagePerSecond * Time.deltaTime);
-                                #if UNITY_EDITOR
-                                Debug.DrawLine(transform.position, targetPoint, Color.red);
-                                #endif
-                            }
-                        }
+                        receiver.TakeLightDamage(damagePerSecond * Time.deltaTime);
                     }
                 }
             }
         }
-
-        private void OnDrawGizmos()
-        {
-            if (!showGizmos) return;
-            
-            Gizmos.color = new Color(1, 1, 0, 0.2f);
-            Gizmos.DrawWireSphere(transform.position, range);
-            
-            // Draw cone
-            Vector3 forward = transform.forward * range;
-            Quaternion leftRayRotation = Quaternion.AngleAxis(-angle * 0.5f, transform.up);
-            Quaternion rightRayRotation = Quaternion.AngleAxis(angle * 0.5f, transform.up);
-            Vector3 leftRayDirection = leftRayRotation * forward;
-            Vector3 rightRayDirection = rightRayRotation * forward;
-
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawRay(transform.position, leftRayDirection);
-            Gizmos.DrawRay(transform.position, rightRayDirection);
-            Gizmos.DrawLine(transform.position + leftRayDirection, transform.position + rightRayDirection);
-        }
     }
 }
+

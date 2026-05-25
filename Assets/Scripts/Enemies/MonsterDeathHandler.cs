@@ -8,6 +8,7 @@ namespace LightNShadowSurvivor
     {
         [SerializeField] private float fadeDuration = 2f;
         [SerializeField] private string dissolveParameter = "_Dissolve";
+        [SerializeField] private Material dissolveMaterialBase;
         
         private MonsterBase monsterBase;
         private GhostAI ai;
@@ -53,51 +54,63 @@ namespace LightNShadowSurvivor
             // 2. Play Death Animation
             if (animator != null)
             {
-                // Try to play 'dissolve' or 'death' state
                 if (HasState(animator, "dissolve"))
                 {
                     animator.CrossFade(DissolveState, 0.2f);
                 }
-                else
+                else if (HasState(animator, "death"))
                 {
-                    // If no death animation, just rotate to simulate falling
-                    StartCoroutine(RotateToFall());
+                    animator.CrossFade(Animator.StringToHash("death"), 0.2f);
                 }
             }
 
-            // 3. Fade Out Visuals
+            // 3. Setup Dissolve Materials
+            var dissolveMaterials = new System.Collections.Generic.List<Material>();
+            foreach (var r in renderers)
+            {
+                Material[] currentMats = r.materials;
+                for (int i = 0; i < currentMats.Length; i++)
+                {
+                    if (!currentMats[i].HasProperty(dissolveParameter) && dissolveMaterialBase != null)
+                    {
+                        Material newMat = new Material(dissolveMaterialBase);
+                        if (currentMats[i].HasProperty("_MainTex")) newMat.SetTexture("_BaseMap", currentMats[i].GetTexture("_MainTex"));
+                        else if (currentMats[i].HasProperty("_BaseMap")) newMat.SetTexture("_BaseMap", currentMats[i].GetTexture("_BaseMap"));
+                        
+                        if (currentMats[i].HasProperty("_Color")) newMat.SetColor("_Color", currentMats[i].GetColor("_Color"));
+                        else if (currentMats[i].HasProperty("_BaseColor")) newMat.SetColor("_Color", currentMats[i].GetColor("_BaseColor"));
+                        
+                        currentMats[i] = newMat;
+                    }
+                    dissolveMaterials.Add(currentMats[i]);
+                }
+                r.materials = currentMats;
+            }
+
+            // 4. Fade Out Visuals
             float elapsed = 0f;
             Vector3 startScale = transform.localScale;
             
-            // Collect all materials to fade
-            Material[] materials = GetAllMaterials();
-
             while (elapsed < fadeDuration)
             {
-                elapsed += Time.deltaTime;
+                elapsed += Time.unscaledDeltaTime;
                 float progress = elapsed / fadeDuration;
-                float alpha = 1f - progress;
+                float dissolveVal = 1f - progress;
 
-                // Scale down as fallback
-                transform.localScale = Vector3.Lerp(startScale, Vector3.zero, progress);
+                // Scale down slightly as well
+                transform.localScale = Vector3.Lerp(startScale, startScale * 0.5f, progress);
 
-                foreach (var mat in materials)
+                foreach (var mat in dissolveMaterials)
                 {
                     if (mat.HasProperty(dissolveParameter))
                     {
-                        mat.SetFloat(dissolveParameter, alpha);
-                    }
-                    else if (mat.HasProperty("_Color"))
-                    {
-                        Color c = mat.color;
-                        c.a = alpha;
-                        mat.color = c;
+                        mat.SetFloat(dissolveParameter, dissolveVal);
                     }
                 }
                 yield return null;
             }
 
-            // 4. Cleanup
+            // 5. Cleanup
             Destroy(gameObject);
         }
 
