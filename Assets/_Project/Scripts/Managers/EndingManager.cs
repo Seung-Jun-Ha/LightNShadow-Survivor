@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 
 namespace LightNShadowSurvivor
@@ -52,21 +52,21 @@ namespace LightNShadowSurvivor
             {
                 if (player.TryGetComponent(out PlayerController pc)) pc.enabled = false;
                 if (player.TryGetComponent(out PlayerAim pa)) pa.enabled = false;
-                if (player.TryGetComponent(out FlashLightAttack fla)) fla.enabled = false;
+                var fla = player.GetComponentInChildren<FlashLightAttack>();
+                if (fla != null) fla.enabled = false;
             }
 
             // 2. Stop Spawning
-            var spawner = FindFirstObjectByType<MonsterSpawner>();
+            var spawner = FindAnyObjectByType<MonsterSpawner>();
             if (spawner != null) spawner.StopSpawning();
 
             // 3. Cleanup all monsters with a delay or dissolve if possible
-            var monsters = GameObject.FindObjectsByType<MonsterBase>(FindObjectsSortMode.None);
+            var monsters = GameObject.FindObjectsByType<MonsterBase>(FindObjectsInactive.Exclude);
             foreach (var m in monsters)
             {
                 // We can't easily trigger dissolve without a specific method, 
                 // but we can at least stop their AI
-                if (m.TryGetComponent(out UnityEngine.AI.NavMeshAgent agent)) agent.isStopped = true;
-                if (m.TryGetComponent(out GhostAI ai)) ai.enabled = false;
+                m.StopBehavior();
                 Destroy(m.gameObject, 2f); // Fade out then destroy
             }
 
@@ -113,3 +113,6 @@ namespace LightNShadowSurvivor
         }
     }
 }
+
+
+

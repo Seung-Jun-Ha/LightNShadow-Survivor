@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System;
 
 namespace LightNShadowSurvivor
@@ -50,7 +50,8 @@ namespace LightNShadowSurvivor
         {
             Debug.Log("Player Died!");
             OnPlayerDeath?.Invoke();
-            // You can add more logic here, like game over screen
+            if (GameManager.Instance != null) GameManager.Instance.TriggerGameOver();
         }
     }
 }
+

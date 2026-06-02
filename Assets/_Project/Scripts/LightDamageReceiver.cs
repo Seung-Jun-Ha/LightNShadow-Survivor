@@ -1,103 +1,163 @@
-/*
+﻿/*
 2026-05-16 AI-Tag
 This was created with the help of Assistant, a Unity Artificial Intelligence product.
 */
-using System;
 using UnityEngine;
 
 namespace LightNShadowSurvivor
 {
     public class LightDamageReceiver : MonoBehaviour
     {
+        [SerializeField] private GameObject hitVfxPrefab;
+        [SerializeField] private float vfxInterval = 0.1f;
+        [SerializeField] private float hitEffectDuration = 0.15f;
+
         private MonsterBase monsterBase;
         private GhostAI ai;
-        [SerializeField] private GameObject hitVfxPrefab;
-        private float vfxTimer = 0f;
-        private float vfxInterval = 0.1f;
-
+        private float vfxTimer;
         private Renderer[] renderers;
         private Color[] originalColors;
-        private float hitEffectTimer = 0f;
-        private float hitEffectDuration = 0.15f;
-        private bool isBeingHit = false;
+        private float hitEffectTimer;
+        private bool isBeingHit;
 
-        void Awake()
+        private void Awake()
         {
             monsterBase = GetComponent<MonsterBase>();
-            ai = GetComponent<GhostAI>();
-            renderers = GetComponentsInChildren<Renderer>();
-            
-            // Store original colors
-            var colorList = new System.Collections.Generic.List<Color>();
-            foreach (var r in renderers)
-            {
-                if (r.material.HasProperty("_BaseColor")) colorList.Add(r.material.GetColor("_BaseColor"));
-                else if (r.material.HasProperty("_Color")) colorList.Add(r.material.GetColor("_Color"));
-                else colorList.Add(Color.white);
-            }
-            originalColors = colorList.ToArray();
-        }
+            if (monsterBase == null) monsterBase = GetComponentInParent<MonsterBase>();
 
-        void Update()
-        {
-            if (isBeingHit)
+            ai = GetComponent<GhostAI>();
+            if (ai == null) ai = GetComponentInParent<GhostAI>();
+
+            renderers = GetComponentsInChildren<Renderer>();
+            originalColors = new Color[renderers.Length];
+            for (int i = 0; i < renderers.Length; i++)
             {
-                hitEffectTimer -= Time.deltaTime;
-                if (hitEffectTimer <= 0)
+                Renderer r = renderers[i];
+                if (r == null || r.material == null)
                 {
-                    ResetColors();
-                    isBeingHit = false;
+                    originalColors[i] = Color.white;
+                }
+                else if (r.material.HasProperty("_BaseColor"))
+                {
+                    originalColors[i] = r.material.GetColor("_BaseColor");
+                }
+                else if (r.material.HasProperty("_Color"))
+                {
+                    originalColors[i] = r.material.GetColor("_Color");
+                }
+                else
+                {
+                    originalColors[i] = Color.white;
                 }
             }
         }
 
-        private void ResetColors()
+        private void Update()
         {
-            for (int i = 0; i < renderers.Length; i++)
-            {
-                if (renderers[i].material.HasProperty("_BaseColor")) renderers[i].material.SetColor("_BaseColor", originalColors[i]);
-                else if (renderers[i].material.HasProperty("_Color")) renderers[i].material.SetColor("_Color", originalColors[i]);
-            }
-        }
+            if (!isBeingHit) return;
 
-        private void SetHitColor()
-        {
-            Color hitColor = new Color(1f, 0.2f, 0.2f, 1f); // Intense red
-            foreach (var r in renderers)
+            hitEffectTimer -= Time.deltaTime;
+            if (hitEffectTimer <= 0f)
             {
-                if (r == null) continue;
-                if (r.material.HasProperty("_BaseColor")) r.material.SetColor("_BaseColor", hitColor);
-                else if (r.material.HasProperty("_Color")) r.material.SetColor("_Color", hitColor);
-                else if (r.material.HasProperty("_BaseMap")) r.material.SetColor("_BaseColor", hitColor);
+                ResetColors();
+                isBeingHit = false;
             }
         }
 
         public void TakeLightDamage(float damage)
         {
-            // Find monster base if lost
             if (monsterBase == null)
             {
                 monsterBase = GetComponent<MonsterBase>();
                 if (monsterBase == null) monsterBase = GetComponentInParent<MonsterBase>();
             }
 
-            if (monsterBase == null) return;
+            if (monsterBase == null || monsterBase.IsDead) return;
+
+            LightReaction reaction = GetReaction(monsterBase.ReactionType);
+            monsterBase.ModifyHealth(-(damage * reaction.DamageMultiplier));
+
+            if (ai == null)
+            {
+                ai = GetComponent<GhostAI>();
+                if (ai == null) ai = GetComponentInParent<GhostAI>();
+            }
+
+            if (ai != null)
+            {
+                ai.ApplySlow(reaction.SpeedMultiplier, reaction.SlowDuration);
+            }
 
             isBeingHit = true;
             hitEffectTimer = hitEffectDuration;
-            SetHitColor();
+            SetHitColor(reaction.HitColor);
+            TrySpawnVfx();
+        }
 
-            monsterBase.ModifyHealth(-damage);
-            
-            if (ai == null) ai = GetComponent<GhostAI>();
-            if (ai != null) ai.ApplySlow(); 
-
-            // Spawn VFX
-            vfxTimer -= Time.deltaTime;
-            if (vfxTimer <= 0 && hitVfxPrefab != null)
+        private static LightReaction GetReaction(GhostReactionType type)
+        {
+            switch (type)
             {
-                Instantiate(hitVfxPrefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
-                vfxTimer = vfxInterval;
+                case GhostReactionType.Weak:
+                    return new LightReaction(1.5f, 0.05f, 0.3f, new Color(1f, 0.85f, 0.2f, 1f));
+                case GhostReactionType.Fast:
+                    return new LightReaction(1f, 0.2f, 0.25f, new Color(0.3f, 0.8f, 1f, 1f));
+                case GhostReactionType.Tank:
+                    return new LightReaction(0.6f, 0.7f, 0.2f, new Color(1f, 0.45f, 0.25f, 1f));
+                case GhostReactionType.Shield:
+                    return new LightReaction(1f, 0.45f, 0.25f, new Color(0.25f, 0.65f, 1f, 1f));
+                case GhostReactionType.Boss:
+                    return new LightReaction(0.8f, 0.6f, 0.2f, new Color(1f, 0.2f, 0.8f, 1f));
+                default:
+                    return new LightReaction(1f, 0.5f, 0.2f, new Color(1f, 0.2f, 0.2f, 1f));
+            }
+        }
+
+        private void TrySpawnVfx()
+        {
+            vfxTimer -= Time.deltaTime;
+            if (vfxTimer > 0f || hitVfxPrefab == null) return;
+
+            Instantiate(hitVfxPrefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
+            vfxTimer = vfxInterval;
+        }
+
+        private void ResetColors()
+        {
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                Renderer r = renderers[i];
+                if (r == null || r.material == null) continue;
+
+                if (r.material.HasProperty("_BaseColor")) r.material.SetColor("_BaseColor", originalColors[i]);
+                else if (r.material.HasProperty("_Color")) r.material.SetColor("_Color", originalColors[i]);
+            }
+        }
+
+        private void SetHitColor(Color hitColor)
+        {
+            foreach (Renderer r in renderers)
+            {
+                if (r == null || r.material == null) continue;
+
+                if (r.material.HasProperty("_BaseColor")) r.material.SetColor("_BaseColor", hitColor);
+                else if (r.material.HasProperty("_Color")) r.material.SetColor("_Color", hitColor);
+            }
+        }
+
+        private readonly struct LightReaction
+        {
+            public readonly float DamageMultiplier;
+            public readonly float SpeedMultiplier;
+            public readonly float SlowDuration;
+            public readonly Color HitColor;
+
+            public LightReaction(float damageMultiplier, float speedMultiplier, float slowDuration, Color hitColor)
+            {
+                DamageMultiplier = damageMultiplier;
+                SpeedMultiplier = speedMultiplier;
+                SlowDuration = slowDuration;
+                HitColor = hitColor;
             }
         }
     }
