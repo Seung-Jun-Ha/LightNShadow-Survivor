@@ -38,7 +38,7 @@ namespace LightNShadowSurvivor.Tests
         {
             Assert.IsFalse(Physics.GetIgnoreLayerCollision(PlayerLayer, GroundLayer), "Player must collide with Ground.");
             Assert.IsFalse(Physics.GetIgnoreLayerCollision(PlayerLayer, ObstacleLayer), "Player must collide with Obstacle.");
-            Assert.IsFalse(Physics.GetIgnoreLayerCollision(PlayerLayer, EnemyLayer), "Player must collide with Enemy.");
+            Assert.IsTrue(Physics.GetIgnoreLayerCollision(PlayerLayer, EnemyLayer), "Ghost enemies are expected to pass through Player physics.");
             Assert.IsFalse(Physics.GetIgnoreLayerCollision(EnemyLayer, ObstacleLayer), "Enemy must collide with Obstacle.");
         }
 
@@ -202,4 +202,5 @@ namespace LightNShadowSurvivor.Tests
         }
     }
 }
+
 

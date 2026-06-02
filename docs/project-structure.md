@@ -91,3 +91,15 @@
 - 밸런스 수치는 스크립트에 하드코딩하지 말고 `UpgradeData`나 `Data/Upgrades`로 분리합니다.
 - 새 유령 타입을 추가할 때는 `MonsterBase` 또는 `BossBase`를 상속하고, 프리팹과 데이터는 각각 `Enemies/`와 `Data/Upgrades/` 정책에 맞춰 분리합니다.
 - 씬은 흐름만 담당하고, 세부 규칙은 `Scripts/` 쪽에 둡니다.
+
+---
+
+## 2026-06-02 구현 현황 문서
+
+`docs/implementation-status.md`를 추가했습니다. 이 문서는 현재 구현 정도, 전체 구현율, 자동화 테스트 결과, 남은 리스크, 다음 우선순위를 기록합니다.
+
+테스트 관련 파일 위치:
+
+- `Assets/_Project/Tests/PlayMode/FlashLightAttackPlayModeTests.cs`
+- `Assets/_Project/Tests/PlayMode/MapPlayerMonsterCollisionPlayModeTests.cs`
+- `Assets/_Project/Tests/Editor/BatchPlayModeTestRunner.cs`
