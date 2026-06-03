@@ -13,6 +13,7 @@ namespace LightNShadowSurvivor
         [SerializeField] private float round3Duration = 120f;
 
         private int currentRound = 1;
+        private int startedRound;
         private float timer;
         private float elapsedTime;
         private bool isTimerRunning;
@@ -50,7 +51,15 @@ namespace LightNShadowSurvivor
         {
             if (state == GameState.Round)
             {
-                StartRoundTimer();
+                if (startedRound == currentRound && timer > 0f)
+                {
+                    isTimerRunning = true;
+                    OnRoundTimeChanged?.Invoke(timer, elapsedTime);
+                }
+                else
+                {
+                    StartRoundTimer();
+                }
             }
             else
             {
@@ -60,6 +69,7 @@ namespace LightNShadowSurvivor
 
         private void StartRoundTimer()
         {
+            startedRound = currentRound;
             timer = GetRoundDuration(currentRound);
             elapsedTime = 0f;
             isTimerRunning = true;

@@ -22,6 +22,7 @@ namespace LightNShadowSurvivor
         [SerializeField] protected float shieldHealth = 0f;
         [SerializeField] protected GhostReactionType reactionType = GhostReactionType.Normal;
         [SerializeField] protected float experienceReward = 25f;
+        [SerializeField] private bool grantExperienceDirectly = true;
 
         protected float currentHealth;
         protected float currentShield;
@@ -75,7 +76,11 @@ namespace LightNShadowSurvivor
         {
             if (isDead) return;
             isDead = true;
-            GrantExperience();
+            if (grantExperienceDirectly && !TryGetComponent<MonsterDeathHandler>(out _))
+            {
+                GrantExperience();
+            }
+
             OnDeath?.Invoke();
             Destroy(gameObject, 5f);
         }
