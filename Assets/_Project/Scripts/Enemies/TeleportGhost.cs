@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 using System.Collections;
 
 namespace LightNShadowSurvivor
@@ -11,12 +12,14 @@ namespace LightNShadowSurvivor
         [SerializeField] private GameObject teleportEffect;
 
         private Transform player;
+        private NavMeshAgent agent;
         private float teleportTimer;
 
         protected override void Awake()
         {
             base.Awake();
             if (PlayerController.Instance != null) player = PlayerController.Instance.transform;
+            agent = GetComponent<NavMeshAgent>();
             teleportTimer = teleportCooldown;
         }
 
@@ -48,12 +51,22 @@ namespace LightNShadowSurvivor
             // Teleport to a random position closer to the player
             Vector3 randomDir = Random.insideUnitSphere;
             randomDir.y = 0;
+            if (randomDir.sqrMagnitude < 0.0001f) randomDir = transform.forward;
+
             Vector3 targetPos = player.position + randomDir.normalized * teleportDistance;
 
             // NavMesh check
-            if (UnityEngine.AI.NavMesh.SamplePosition(targetPos, out UnityEngine.AI.NavMeshHit hit, 5f, UnityEngine.AI.NavMesh.AllAreas))
+            if (NavMesh.SamplePosition(targetPos, out NavMeshHit hit, 5f, NavMesh.AllAreas))
             {
-                transform.position = hit.position;
+                if (agent != null && agent.isOnNavMesh)
+                {
+                    agent.Warp(hit.position);
+                    agent.ResetPath();
+                }
+                else
+                {
+                    transform.position = hit.position;
+                }
                 
                 if (teleportEffect != null)
                     Instantiate(teleportEffect, transform.position, Quaternion.identity);
