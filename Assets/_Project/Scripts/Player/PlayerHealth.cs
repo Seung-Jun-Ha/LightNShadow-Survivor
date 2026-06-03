@@ -65,7 +65,11 @@ namespace LightNShadowSurvivor
             isDead = true;
             Debug.Log("Player Died!");
             OnPlayerDeath?.Invoke();
-            if (GameManager.Instance != null) GameManager.Instance.TriggerGameOver();
+
+            if (GetComponent<PlayerDeathHandler>() == null && GameManager.Instance != null)
+            {
+                GameManager.Instance.TriggerGameOver();
+            }
         }
     }
 }

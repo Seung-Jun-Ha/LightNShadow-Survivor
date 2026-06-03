@@ -82,6 +82,11 @@ namespace LightNShadowSurvivor
 
             if (playerHealth != null) playerHealth.OnHealthChanged -= UpdateHP;
             if (playerExp != null) playerExp.OnXPChanged -= UpdateExp;
+
+            if (Instance == this)
+            {
+                Instance = null;
+            }
         }
 
         private void Update()

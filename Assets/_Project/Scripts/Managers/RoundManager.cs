@@ -45,6 +45,11 @@ namespace LightNShadowSurvivor
         {
             if (GameManager.Instance != null)
                 GameManager.Instance.OnStateChanged -= HandleStateChanged;
+
+            if (Instance == this)
+            {
+                Instance = null;
+            }
         }
 
         private void HandleStateChanged(GameState state)

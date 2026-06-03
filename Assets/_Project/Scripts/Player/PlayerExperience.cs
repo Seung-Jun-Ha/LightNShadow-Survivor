@@ -26,8 +26,18 @@ namespace LightNShadowSurvivor
             else Destroy(gameObject);
         }
 
+        private void OnDestroy()
+        {
+            if (Instance == this)
+            {
+                Instance = null;
+            }
+        }
+
         public void AddXP(float amount)
         {
+            if (amount <= 0f) return;
+
             currentXP += amount;
             
             while (currentXP >= xpToNextLevel)
@@ -46,12 +56,11 @@ namespace LightNShadowSurvivor
             
             Debug.Log($"Level Up! Current Level: {currentLevel}");
             OnLevelUp?.Invoke(currentLevel);
-            
-            // In a real roguelike survivor game, level up triggers an upgrade.
-            // But the scenario says "End of round OR level up".
-            // We can trigger an immediate upgrade or just wait until the end of the round.
-            // Let's stick to the scenario: "Level up or round end -> Upgrade selection".
-            GameManager.Instance.OpenUpgrade();
+
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.OpenUpgrade();
+            }
         }
     }
 }

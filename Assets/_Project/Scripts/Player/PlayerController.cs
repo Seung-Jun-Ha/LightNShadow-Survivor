@@ -83,6 +83,14 @@ namespace LightNShadowSurvivor
             if (moveAction != null) moveAction.Disable();
         }
 
+        private void OnDestroy()
+        {
+            if (Instance == this)
+            {
+                Instance = null;
+            }
+        }
+
         private void Update()
         {
             if (moveAction != null) moveInput = moveAction.ReadValue<Vector2>();

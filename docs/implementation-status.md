@@ -75,16 +75,38 @@
 
 ### 2026-06-03 회귀 테스트
 
-결과: 전체 PlayMode 테스트 19개 중 19개 통과
+결과: 전체 PlayMode 테스트 27개 중 27개 통과
 
 - `MidRoundUpgradeResumeDoesNotResetRoundTimer`: 통과
 - `PlayerDeathEventFiresOnlyOnce`: 통과
 - `MonsterWithDeathHandlerDoesNotGrantDirectXP`: 통과
+- `PlayerDeathHandlerTriggersGameOverAfterDeathRoutine`: 통과
+- `MonsterDeathHandlerCountsKillAndDropsXpOrb`: 통과
+- `PlayerExperienceLevelUpDoesNotRequireGameManager`: 통과
+- `StartRoundFromTerminalStateResetsStatsAndResumesTime`: 통과
 
 추가 검증:
 
 - `dotnet build LightNShadow-Survivor.sln`: 성공, 오류 0개
 - Unity PlayMode TestRunner: 성공, 실패 0개
+
+### 2026-06-03 구현도 개선 패스
+
+결과: 핵심 게임 루프와 상태 관리 안정화 완료. 전체 구현율은 약 68%로 상향 조정합니다.
+
+- `GameManager` 상태 진입 정책 보강: `MainMenu`, `Round`, `Upgrade`, `Ending`, `GameOver` 진입 시 `Time.timeScale`과 커서 상태를 일관 적용.
+- 새 라운드 시작 시 이전 게임의 처치 수/생존 시간 통계가 남지 않도록 `GameStatsManager.ResetStats()` 연결.
+- `GameOver` 진입 시 사망 연출 이후 시간이 정지되도록 정리.
+- 주요 싱글톤(`GameManager`, `RoundManager`, `UIManager`, `GameStatsManager`, `GameCycleManager`, `PlayerController`, `PlayerExperience`) 파괴 시 `Instance` 해제.
+- `GameCycleManager`의 업그레이드 UI null 방어 및 null 업그레이드 선택 흐름 보강.
+- 몬스터 사망 흐름 구현 보강: 처치 카운트, 충돌 비활성화, XP 오브 드롭, 아이템 드롭, 낙하/디졸브 후 제거.
+- 플레이어 사망 흐름 구현 보강: `PlayerDeathHandler`가 있을 때 사망 연출 완료 후 `GameOver` 1회 전환.
+
+작업 종료 운영 규칙:
+
+- 앞으로 각 작업이 끝나면 프로젝트 내 md 진행 문서를 업데이트한다.
+- 문서 업데이트 후 관련 변경 파일을 `git add` 한다.
+- 최종 응답에는 검증 결과, staged 상태, 다음 리스크를 간단히 남긴다.
 
 ## 주요 완료 항목
 
@@ -130,5 +152,5 @@ Unity 표준 `-runTests`가 현재 환경에서 초기 컴파일 타이밍 때�
 
 ## 판정
 
-현재 상태는 “핵심 로직 MVP 구현 후 안정화 단계”입니다. 2026-06-03 기준으로 주요 상태 전환/보상 중복 리스크 일부는 해결되었고 자동화 테스트도 19개까지 늘었습니다. 다만 릴리즈 품질로 보기에는 씬 연결, 보스/특수 몬스터, UI/연출, 밸런스, 실제 플레이 검증이 여전히 부족합니다.
+현재 상태는 “핵심 로직 MVP 구현 후 안정화 단계”입니다. 2026-06-03 기준으로 주요 상태 전환/보상 중복/사망 흐름 리스크 일부는 해결되었고 자동화 테스트도 27개까지 늘었습니다. 다만 릴리즈 품질로 보기에는 씬 연결, 보스/특수 몬스터, UI/연출, 밸런스, 실제 플레이 검증이 여전히 부족합니다.
 

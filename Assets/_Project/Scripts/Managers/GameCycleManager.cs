@@ -49,6 +49,11 @@ namespace LightNShadowSurvivor
         {
             if (GameManager.Instance != null)
                 GameManager.Instance.OnStateChanged -= HandleStateChanged;
+
+            if (Instance == this)
+            {
+                Instance = null;
+            }
         }
 
         private void HandleStateChanged(GameState state)
@@ -89,7 +94,7 @@ namespace LightNShadowSurvivor
 
         private void OpenUpgradeUI()
         {
-            if (upgradePanel == null) return;
+            if (upgradePanel == null || cardContainer == null || upgradeCardPrefab == null) return;
 
             upgradePanel.SetActive(true);
             Cursor.visible = true;
@@ -129,6 +134,13 @@ namespace LightNShadowSurvivor
 
         private void OnUpgradeSelected(UpgradeData data)
         {
+            if (data == null)
+            {
+                AdvanceStage();
+                ResumeGame();
+                return;
+            }
+
             ApplyUpgrade(data);
             AdvanceStage();
             ResumeGame();
@@ -136,6 +148,8 @@ namespace LightNShadowSurvivor
 
         private void ApplyUpgrade(UpgradeData data)
         {
+            if (data == null) return;
+
             GameObject player = GameObject.Find("Player_Main");
             if (player == null) return;
 
@@ -184,7 +198,7 @@ namespace LightNShadowSurvivor
 
         private void ResumeGame()
         {
-            upgradePanel.SetActive(false);
+            if (upgradePanel != null) upgradePanel.SetActive(false);
             currentTimer = stageTime;
             isTimerRunning = true;
             Time.timeScale = 1f;
