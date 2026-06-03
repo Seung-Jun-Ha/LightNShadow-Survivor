@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace Sample {
@@ -143,7 +144,7 @@ public class GhostScript : MonoBehaviour
     // play a animation of Attack
     private void PlayerAttack ()
     {
-        if(Input.GetKeyDown(KeyCode.A))
+        if(WasKeyPressed(Keyboard.current?.aKey))
         {
             Anim.CrossFade(AttackState,0.1f,0,0);
         }
@@ -187,19 +188,19 @@ public class GhostScript : MonoBehaviour
         // velocity
         if(Anim.GetCurrentAnimatorStateInfo(0).fullPathHash == MoveState)
         {
-            if (Input.GetKey(KeyCode.UpArrow) && !Input.GetKey(KeyCode.DownArrow) && !Input.GetKey(KeyCode.LeftArrow) && !Input.GetKey(KeyCode.RightArrow))
+            if (IsKeyPressed(Keyboard.current?.upArrowKey) && !IsKeyPressed(Keyboard.current?.downArrowKey) && !IsKeyPressed(Keyboard.current?.leftArrowKey) && !IsKeyPressed(Keyboard.current?.rightArrowKey))
             {
                 MOVE_Velocity(new Vector3(0, 0, -Speed), new Vector3(0, 180, 0));
             }
-            else if (Input.GetKey(KeyCode.DownArrow) && !Input.GetKey(KeyCode.UpArrow) && !Input.GetKey(KeyCode.LeftArrow) && !Input.GetKey(KeyCode.RightArrow))
+            else if (IsKeyPressed(Keyboard.current?.downArrowKey) && !IsKeyPressed(Keyboard.current?.upArrowKey) && !IsKeyPressed(Keyboard.current?.leftArrowKey) && !IsKeyPressed(Keyboard.current?.rightArrowKey))
             {
                 MOVE_Velocity(new Vector3(0, 0, Speed), new Vector3(0, 0, 0));
             }
-            else if (Input.GetKey(KeyCode.LeftArrow) && !Input.GetKey(KeyCode.UpArrow) && !Input.GetKey(KeyCode.DownArrow) && !Input.GetKey(KeyCode.RightArrow))
+            else if (IsKeyPressed(Keyboard.current?.leftArrowKey) && !IsKeyPressed(Keyboard.current?.upArrowKey) && !IsKeyPressed(Keyboard.current?.downArrowKey) && !IsKeyPressed(Keyboard.current?.rightArrowKey))
             {
                 MOVE_Velocity(new Vector3(Speed, 0, 0), new Vector3(0, 90, 0));
             }
-            else if (Input.GetKey(KeyCode.RightArrow) && !Input.GetKey(KeyCode.UpArrow) && !Input.GetKey(KeyCode.DownArrow) && !Input.GetKey(KeyCode.LeftArrow))
+            else if (IsKeyPressed(Keyboard.current?.rightArrowKey) && !IsKeyPressed(Keyboard.current?.upArrowKey) && !IsKeyPressed(Keyboard.current?.downArrowKey) && !IsKeyPressed(Keyboard.current?.leftArrowKey))
             {
                 MOVE_Velocity(new Vector3(-Speed, 0, 0), new Vector3(0, 270, 0));
             }
@@ -226,19 +227,19 @@ public class GhostScript : MonoBehaviour
     //---------------------------------------------------------------------
     private void KEY_DOWN ()
     {
-        if (Input.GetKeyDown(KeyCode.UpArrow))
+        if (WasKeyPressed(Keyboard.current?.upArrowKey))
         {
             Anim.CrossFade(MoveState, 0.1f, 0, 0);
         }
-        else if (Input.GetKeyDown(KeyCode.DownArrow))
+        else if (WasKeyPressed(Keyboard.current?.downArrowKey))
         {
             Anim.CrossFade(MoveState, 0.1f, 0, 0);
         }
-        else if (Input.GetKeyDown(KeyCode.LeftArrow))
+        else if (WasKeyPressed(Keyboard.current?.leftArrowKey))
         {
             Anim.CrossFade(MoveState, 0.1f, 0, 0);
         }
-        else if (Input.GetKeyDown(KeyCode.RightArrow))
+        else if (WasKeyPressed(Keyboard.current?.rightArrowKey))
         {
             Anim.CrossFade(MoveState, 0.1f, 0, 0);
         }
@@ -248,30 +249,30 @@ public class GhostScript : MonoBehaviour
     //---------------------------------------------------------------------
     private void KEY_UP ()
     {
-        if (Input.GetKeyUp(KeyCode.UpArrow))
+        if (WasKeyReleased(Keyboard.current?.upArrowKey))
         {
-            if(!Input.GetKey(KeyCode.DownArrow) && !Input.GetKey(KeyCode.LeftArrow) && !Input.GetKey(KeyCode.RightArrow))
+            if(!IsKeyPressed(Keyboard.current?.downArrowKey) && !IsKeyPressed(Keyboard.current?.leftArrowKey) && !IsKeyPressed(Keyboard.current?.rightArrowKey))
             {
                 Anim.CrossFade(IdleState, 0.1f, 0, 0);
             }
         }
-        else if (Input.GetKeyUp(KeyCode.DownArrow))
+        else if (WasKeyReleased(Keyboard.current?.downArrowKey))
         {
-            if(!Input.GetKey(KeyCode.UpArrow) && !Input.GetKey(KeyCode.LeftArrow) && !Input.GetKey(KeyCode.RightArrow))
+            if(!IsKeyPressed(Keyboard.current?.upArrowKey) && !IsKeyPressed(Keyboard.current?.leftArrowKey) && !IsKeyPressed(Keyboard.current?.rightArrowKey))
             {
                 Anim.CrossFade(IdleState, 0.1f, 0, 0);
             }
         }
-        else if (Input.GetKeyUp(KeyCode.LeftArrow))
+        else if (WasKeyReleased(Keyboard.current?.leftArrowKey))
         {
-            if(!Input.GetKey(KeyCode.UpArrow) && !Input.GetKey(KeyCode.DownArrow) && !Input.GetKey(KeyCode.RightArrow))
+            if(!IsKeyPressed(Keyboard.current?.upArrowKey) && !IsKeyPressed(Keyboard.current?.downArrowKey) && !IsKeyPressed(Keyboard.current?.rightArrowKey))
             {
                 Anim.CrossFade(IdleState, 0.1f, 0, 0);
             }
         }
-        else if (Input.GetKeyUp(KeyCode.RightArrow))
+        else if (WasKeyReleased(Keyboard.current?.rightArrowKey))
         {
-            if(!Input.GetKey(KeyCode.UpArrow) && !Input.GetKey(KeyCode.DownArrow) && !Input.GetKey(KeyCode.LeftArrow))
+            if(!IsKeyPressed(Keyboard.current?.upArrowKey) && !IsKeyPressed(Keyboard.current?.downArrowKey) && !IsKeyPressed(Keyboard.current?.leftArrowKey))
             {
                 Anim.CrossFade(IdleState, 0.1f, 0, 0);
             }
@@ -283,7 +284,7 @@ public class GhostScript : MonoBehaviour
     private void Damage ()
     {
         // Damaged by outside field.
-        if(Input.GetKeyUp(KeyCode.S))
+        if(WasKeyReleased(Keyboard.current?.sKey))
         {
             Anim.CrossFade(SurprisedState, 0.1f, 0, 0);
             HP--;
@@ -295,7 +296,7 @@ public class GhostScript : MonoBehaviour
     //---------------------------------------------------------------------
     private void Respawn ()
     {
-        if(Input.GetKeyDown(KeyCode.Space))
+        if(WasKeyPressed(Keyboard.current?.spaceKey))
         {
             // player HP
             HP = maxHP;
@@ -314,6 +315,21 @@ public class GhostScript : MonoBehaviour
             // reset animation
             Anim.CrossFade(IdleState, 0.1f, 0, 0);
         }
+    }
+
+    private static bool IsKeyPressed(UnityEngine.InputSystem.Controls.KeyControl key)
+    {
+        return key != null && key.isPressed;
+    }
+
+    private static bool WasKeyPressed(UnityEngine.InputSystem.Controls.KeyControl key)
+    {
+        return key != null && key.wasPressedThisFrame;
+    }
+
+    private static bool WasKeyReleased(UnityEngine.InputSystem.Controls.KeyControl key)
+    {
+        return key != null && key.wasReleasedThisFrame;
     }
 }
 }

@@ -38,6 +38,20 @@ namespace LightNShadowSurvivor.Tests
         }
 
         [Test]
+        public void AwakeConfiguresCapsuleAboveGround()
+        {
+            GameObject player = CreatePlayer(Vector3.zero);
+            CapsuleCollider capsule = player.GetComponent<CapsuleCollider>();
+
+            Assert.NotNull(capsule);
+            Assert.IsFalse(capsule.isTrigger);
+            Assert.AreEqual(1, capsule.direction);
+            Assert.GreaterOrEqual(capsule.height, 1.8f);
+            Assert.GreaterOrEqual(capsule.radius, 0.35f);
+            Assert.GreaterOrEqual(capsule.center.y, capsule.height * 0.45f);
+        }
+
+        [Test]
         public void ForwardInputAppliesVelocityAlongFacingDirection()
         {
             GameObject player = CreatePlayer(Vector3.zero);
