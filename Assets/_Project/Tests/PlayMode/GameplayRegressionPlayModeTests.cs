@@ -14,7 +14,7 @@ namespace LightNShadowSurvivor.Tests
         {
             Time.timeScale = 1f;
 
-            foreach (GameObject obj in UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (GameObject obj in UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include))
             {
                 if (obj == null) continue;
                 if (obj.name.StartsWith("GameplayRegressionTest_", StringComparison.Ordinal))
@@ -80,21 +80,21 @@ namespace LightNShadowSurvivor.Tests
         }
 
         [UnityTest]
-        public IEnumerator MonsterWithDeathHandlerDoesNotGrantDirectXP()
+        public IEnumerator MonsterDeathHandlerGrantsDirectXpWhenOrbPrefabIsMissing()
         {
             Component playerExperience = new GameObject("GameplayRegressionTest_PlayerExperience").AddComponent(FindType("LightNShadowSurvivor.PlayerExperience"));
             SetFieldValue(playerExperience, "xpToNextLevel", 999f, BindingFlags.Instance | BindingFlags.NonPublic);
 
             GameObject monster = new GameObject("GameplayRegressionTest_Monster");
             Component monsterBase = monster.AddComponent(FindType("LightNShadowSurvivor.MonsterBase"));
-            monster.AddComponent(FindType("LightNShadowSurvivor.MonsterDeathHandler"));
-            SetFieldValue(monsterBase, "experienceReward", 50f, BindingFlags.Instance | BindingFlags.NonPublic);
+            Component deathHandler = monster.AddComponent(FindType("LightNShadowSurvivor.MonsterDeathHandler"));
+            SetFieldValue(deathHandler, "xpValue", 50f, BindingFlags.Instance | BindingFlags.NonPublic);
             yield return null;
 
             Invoke(monsterBase, "ModifyHealth", -200f);
             yield return null;
 
-            Assert.AreEqual(0f, GetFloatProperty(playerExperience, "CurrentXP"));
+            Assert.AreEqual(50f, GetFloatProperty(playerExperience, "CurrentXP"));
         }
 
         [UnityTest]
@@ -147,6 +147,8 @@ namespace LightNShadowSurvivor.Tests
         public IEnumerator MonsterDeathHandlerCountsKillAndDropsXpOrb()
         {
             Component stats = new GameObject("GameplayRegressionTest_Stats").AddComponent(FindType("LightNShadowSurvivor.GameStatsManager"));
+            Component playerExperience = new GameObject("GameplayRegressionTest_PlayerExperience").AddComponent(FindType("LightNShadowSurvivor.PlayerExperience"));
+            SetFieldValue(playerExperience, "xpToNextLevel", 999f, BindingFlags.Instance | BindingFlags.NonPublic);
             GameObject orbPrefab = new GameObject("GameplayRegressionTest_XPOrb");
             orbPrefab.AddComponent(FindType("LightNShadowSurvivor.ExperienceOrb"));
 
@@ -163,6 +165,7 @@ namespace LightNShadowSurvivor.Tests
 
             Assert.AreEqual(1, GetIntProperty(stats, "Kills"));
             Assert.NotNull(GameObject.Find("GameplayRegressionTest_XPOrb(Clone)"));
+            Assert.AreEqual(0f, GetFloatProperty(playerExperience, "CurrentXP"));
             Assert.IsFalse(monster.GetComponent<Collider>().enabled);
         }
 

@@ -87,12 +87,19 @@ namespace LightNShadowSurvivor
             Plane aimPlane = new Plane(Vector3.up, transform.position + Vector3.up * 0.8f);
             if (aimPlane.Raycast(ray, out float enter))
             {
-                currentTargetPoint = ray.GetPoint(enter);
+                currentTargetPoint = ClampVerticalTarget(ray.GetPoint(enter));
             }
             else
             {
-                currentTargetPoint = ray.GetPoint(aimDistance);
+                currentTargetPoint = ClampVerticalTarget(ray.GetPoint(aimDistance));
             }
+        }
+
+        private Vector3 ClampVerticalTarget(Vector3 targetPoint)
+        {
+            float limit = Mathf.Max(0f, verticalLimit);
+            targetPoint.y = Mathf.Clamp(targetPoint.y, transform.position.y - limit, transform.position.y + limit);
+            return targetPoint;
         }
 
         private Quaternion AimBoneSmoothly(Transform bone, Quaternion currentRot, Vector3 offset)

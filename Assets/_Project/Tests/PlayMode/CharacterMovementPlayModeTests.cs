@@ -12,7 +12,7 @@ namespace LightNShadowSurvivor.Tests
         {
             Time.timeScale = 1f;
 
-            foreach (GameObject obj in UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (GameObject obj in UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include))
             {
                 if (obj != null && obj.name.StartsWith("CharacterMoveTest_", StringComparison.Ordinal))
                 {

@@ -83,14 +83,7 @@ namespace LightNShadowSurvivor
                 Instantiate(deathParticlePrefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
             }
 
-            if (xpOrbPrefab != null)
-            {
-                GameObject orb = Instantiate(xpOrbPrefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
-                if (orb.TryGetComponent<ExperienceOrb>(out var xp))
-                {
-                    xp.SetXP(xpValue);
-                }
-            }
+            GrantExperienceReward();
 
             // Drop Random Item
             if (itemPrefabs != null && itemPrefabs.Length > 0 && Random.value < itemDropChance)
@@ -108,6 +101,29 @@ namespace LightNShadowSurvivor
             yield return StartCoroutine(DissolveRoutine());
 
             Destroy(gameObject);
+        }
+
+        private void GrantExperienceReward()
+        {
+            if (xpValue <= 0f) return;
+
+            if (xpOrbPrefab != null)
+            {
+                GameObject orb = Instantiate(xpOrbPrefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
+                if (orb.TryGetComponent(out ExperienceOrb xp))
+                {
+                    xp.SetXP(xpValue);
+                    return;
+                }
+
+                Destroy(orb);
+                Debug.LogWarning("[MonsterDeathHandler] XP orb prefab has no ExperienceOrb component. Granting XP directly.");
+            }
+
+            if (PlayerExperience.Instance != null)
+            {
+                PlayerExperience.Instance.AddXP(xpValue);
+            }
         }
 
         private Material[] GetAllMaterials()

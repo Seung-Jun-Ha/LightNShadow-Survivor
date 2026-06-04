@@ -14,7 +14,7 @@ namespace LightNShadowSurvivor.Tests
         {
             Time.timeScale = 1f;
 
-            foreach (GameObject obj in UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (GameObject obj in UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include))
             {
                 if (obj == null) continue;
                 if (obj.name.StartsWith("RoundFlowTest_", StringComparison.Ordinal) || obj.name == "Player_Main" || obj.name == "Result_UI")

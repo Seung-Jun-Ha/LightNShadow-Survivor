@@ -4,10 +4,18 @@
 
 ## P0 - 출시 전 필수 확인 작업
 
-- [ ] GameScene에서 `GameManager`, `RoundManager`, `MonsterSpawner`, `UpgradeManager`, `UIManager`, `EndingManager` 실제 오브젝트/프리팹 연결 상태 점검. 완료 기준: 필수 참조가 모두 null 없이 연결되고, 새 게임 시작부터 엔딩/게임오버 진입까지 끊김이 없다.
-- [ ] 각 몬스터 프리팹에 `MonsterBase`, `GhostAI`, `MonsterDeathHandler`, Collider, NavMeshAgent, XP 오브 프리팹 참조가 올바르게 붙어 있는지 검증. 완료 기준: 대표 몬스터 프리팹이 스폰/사망/보상 과정에서 예외 없이 동작한다.
-- [ ] `MonsterDeathHandler`의 XP 오브 프리팹 누락 시 보상 손실 정책 결정: 프리팹 필수 연결로 강제하거나 fallback 직접 XP 지급 구현. 완료 기준: 누락이 발생해도 보상 손실이나 중복 지급이 없다.
+- [x] GameScene에서 `GameManager`, `RoundManager`, `MonsterSpawner`, `UpgradeManager`, `UIManager`, `EndingManager` 실제 오브젝트/프리팹 연결 상태 점검. 완료 기준: 필수 참조가 모두 null 없이 연결되고, 새 게임 시작부터 엔딩/게임오버 진입까지 끊김이 없다.
+- [x] 각 몬스터 프리팹에 `MonsterBase`, `GhostAI`, `MonsterDeathHandler`, Collider, NavMeshAgent, XP 오브 프리팹 참조가 올바르게 붙어 있는지 검증. 완료 기준: 대표 몬스터 프리팹이 스폰/사망/보상 과정에서 예외 없이 동작한다.
+- [x] `MonsterDeathHandler`의 XP 오브 프리팹 누락 시 보상 손실 정책 결정: 프리팹 필수 연결로 강제하거나 fallback 직접 XP 지급 구현. 완료 기준: 누락이 발생해도 보상 손실이나 중복 지급이 없다.
 - [ ] 실제 씬에서 시작 버튼 -> 라운드 -> 업그레이드 -> 다음 라운드 -> 엔딩/게임오버까지 수동 smoke test 수행. 완료 기준: 한 번의 플레이 루프에서 주요 화면 전환이 끊기지 않고 재현된다.
+
+2026-06-04 검증 메모:
+
+- `GameSceneValidator.ValidateBatch`: 핵심 매니저 6종 및 필수 직렬화 참조 통과.
+- `GameSceneValidator.ValidateEnemyPrefabsBatch`: `Boss_Ghost`, `Ghost_Shielded`, `Ghost_Teleport` 필수 컴포넌트와 XP 오브 참조 통과.
+- XP 보상 정책: XP 오브가 유효하면 오브만 생성하고, 프리팹 누락 또는 `ExperienceOrb` 컴포넌트 누락 시 직접 XP를 지급한다.
+- `dotnet build LightNShadow-Survivor.sln`: 오류 0개.
+- Unity PlayMode 테스트: 28/28 통과. 실제 씬 수동 smoke test는 별도 수행 필요.
 
 ## P1 - 핵심 재미와 난이도 완성 작업
 
@@ -24,8 +32,15 @@
 - [ ] Sunrise 엔딩의 조명, fog, 포스트프로세싱, 결과 UI 노출 타이밍 연출 개선. 완료 기준: 엔딩 진입 직후 조명 변화와 결과 UI 노출 순서가 연출 스펙과 일치한다.
 - [ ] 전투/피격/수집/업그레이드/게임오버/엔딩 SFX와 최소 VFX 연결. 완료 기준: 핵심 액션마다 최소 1개 이상의 피드백이 재생된다.
 - [ ] 몬스터 변종별 고유 공격/피격 애니메이션을 연결해 시각적 구분을 강화. 완료 기준: 기본/신속/쉴드/텔레포트/보스가 한눈에 구분된다.
-- [ ] 테스트 obsolete API 경고 정리: `FindObjectsByType` 호출에서 deprecated overload 제거. 완료 기준: 빌드 경고가 남지 않는다.
-- [ ] `PlayerAim.verticalLimit` 미사용 경고 제거 또는 실제 수직 조준 제한 로직에 연결. 완료 기준: 경고가 제거되거나 기능으로 연결된다.
+- [x] 테스트 obsolete API 경고 정리: `FindObjectsByType` 호출에서 deprecated overload 제거. 완료 기준: 프로젝트 소유 테스트 코드의 obsolete API 경고가 남지 않는다.
+- [x] `PlayerAim.verticalLimit` 미사용 경고 제거 또는 실제 수직 조준 제한 로직에 연결. 완료 기준: 수직 조준 제한 기능과 회귀 테스트가 연결된다.
+
+2026-06-04 릴리즈 품질 메모:
+
+- 프로젝트 소유 테스트 코드의 deprecated `FindObjectsByType` overload를 Unity 6 API로 교체.
+- `PlayerAim.verticalLimit`을 플레이어 기준 수직 목표 제한에 연결하고 회귀 테스트 추가.
+- `dotnet build LightNShadow-Survivor.sln`: 오류 0개. 남은 경고 2개는 Unity AI 패키지의 `System.Net.Http`/`System.IO.Compression` 어셈블리 충돌.
+- Unity PlayMode 테스트: 28/28 통과.
 
 ## P3 - 확장 및 운영 작업
 

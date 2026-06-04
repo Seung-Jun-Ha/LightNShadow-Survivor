@@ -21,7 +21,7 @@ namespace LightNShadowSurvivor.Tests
         [TearDown]
         public void TearDown()
         {
-            foreach (GameObject obj in UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (GameObject obj in UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include))
             {
                 if (obj.name.StartsWith("FlashlightTest_", StringComparison.Ordinal))
                 {
@@ -80,7 +80,7 @@ namespace LightNShadowSurvivor.Tests
 
         private static void DisableExistingSceneFlashlights()
         {
-            foreach (MonoBehaviour behaviour in UnityEngine.Object.FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (MonoBehaviour behaviour in UnityEngine.Object.FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include))
             {
                 if (behaviour != null && behaviour.GetType().FullName == "LightNShadowSurvivor.FlashLightAttack")
                 {
