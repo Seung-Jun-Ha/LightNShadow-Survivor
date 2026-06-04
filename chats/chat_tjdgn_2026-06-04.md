@@ -62,3 +62,15 @@ Codex(2) [2026-06-04 20:45]: 3라운드 보스용 `Boss_Orc` 프리팹을 `monst
 3. 기존 테스트용 1000 DPS를 제거하고 실제 `damagePerSecond` 기반 데미지로 통일해 20초 튜닝이 의미 있게 동작하게 한다.
 
 민감정보: 없음
+## 2026-06-04 21:54 — Turn 6
+
+User(6) [2026-06-04 21:54]: Moon 이 맵에서 보이고, 달빛으로 사용하도록 수정해줘.
+
+Codex(6) [2026-06-04 21:54]: `GameScene`의 `Moon`을 `Main Camera` 자식으로 배치해 카메라 이동 중에도 화면 배경에 보이도록 수정했다. `Moon_Mat`은 `Universal Render Pipeline/Unlit`으로 설정해 밤 조명 아래에서도 마젠타나 어두운 렌더링 없이 보이게 했고, 기존 `Directional Light`와 `TimeOfDayManager`의 밤 조명 값을 달빛 색상/세기(`intensity=0.42`, 차가운 청색 계열)로 맞췄다. Unity 검증에서 `Moon viewport visible=True`, `parent=Main Camera`, `shader=Universal Render Pipeline/Unlit`, `Directional Light type=Directional`을 확인했다.
+
+핵심 결정:
+1. 카메라가 플레이어를 따라가므로 `Moon`은 월드 고정 오브젝트가 아니라 `Main Camera` 자식으로 두어 항상 맵 배경에 보이게 한다.
+2. 달 오브젝트는 빛의 영향을 받지 않는 URP/Unlit 머티리얼로 설정해 시각적 달 표현을 안정화한다.
+3. 실제 달빛 효과는 `Directional Light`와 `TimeOfDayManager`의 밤 조명 값으로 제어한다.
+
+민감정보: 없음
