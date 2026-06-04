@@ -9,6 +9,8 @@ namespace LightNShadowSurvivor
 {
     public class FlashLightAttack : MonoBehaviour
     {
+        private const float InitialDamagePerSecond = 1f;
+
         [Header("Light Attack")]
         [SerializeField] private bool requireFireInput = false;
         [SerializeField] private LayerMask obstacleLayer;
@@ -24,6 +26,7 @@ namespace LightNShadowSurvivor
 
         private void Awake()
         {
+            damagePerSecond = InitialDamagePerSecond;
             hitBuffer = new Collider[Mathf.Max(1, maxTargets)];
         }
 

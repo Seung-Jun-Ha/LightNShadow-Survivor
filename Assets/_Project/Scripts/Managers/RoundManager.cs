@@ -92,6 +92,14 @@ namespace LightNShadowSurvivor
 
             float delta = Time.deltaTime;
             elapsedTime += delta;
+
+            if (currentRound == 3)
+            {
+                timer = 0f;
+                OnRoundTimeChanged?.Invoke(timer, elapsedTime);
+                return;
+            }
+
             timer = Mathf.Max(0f, timer - delta);
             OnRoundTimeChanged?.Invoke(timer, elapsedTime);
 

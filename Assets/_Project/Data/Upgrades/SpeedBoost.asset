@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SpeedBoost
   m_EditorClassIdentifier: Assembly-CSharp::LightNShadowSurvivor.UpgradeData
   upgradeName: SpeedBoost
-  description: Increase movement speed by 2.0
+  description: Increase movement speed by 10%
   icon: {fileID: 0}
   upgradeType: 0
-  increaseValue: 2
+  increaseValue: 0.1

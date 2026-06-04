@@ -6,20 +6,14 @@ namespace LightNShadowSurvivor
     public class PlayerHealth : MonoBehaviour
     {
         [SerializeField] private float maxHealth = 100f;
+        [SerializeField, Range(0f, 0.9f)] private float damageReduction;
         private float currentHealth;
         private bool isDead;
 
-        public void IncreaseMaxHealth(float amount)
+        public void IncreaseDurability(float reductionPercent)
         {
-            if (amount <= 0f) return;
-
-            maxHealth += amount;
-            if (!isDead)
-            {
-                currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
-            }
-
-            OnHealthChanged?.Invoke(currentHealth);
+            if (reductionPercent <= 0f) return;
+            damageReduction = 1f - ((1f - damageReduction) * (1f - Mathf.Clamp01(reductionPercent)));
         }
 
         public event Action<float> OnHealthChanged;
@@ -27,6 +21,7 @@ namespace LightNShadowSurvivor
 
         public float CurrentHealth => currentHealth;
         public float MaxHealth => maxHealth;
+        public float DamageReduction => damageReduction;
         public bool IsDead => isDead;
 
         private void Awake()
@@ -38,7 +33,7 @@ namespace LightNShadowSurvivor
         {
             if (isDead || amount <= 0f) return;
 
-            currentHealth -= amount;
+            currentHealth -= amount * (1f - damageReduction);
             currentHealth = Mathf.Max(currentHealth, 0);
             
             OnHealthChanged?.Invoke(currentHealth);

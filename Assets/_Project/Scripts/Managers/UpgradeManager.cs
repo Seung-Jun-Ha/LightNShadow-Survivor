@@ -43,32 +43,19 @@ namespace LightNShadowSurvivor
             switch (data.upgradeType)
             {
                 case UpgradeType.MoveSpeed:
-                    if (PlayerController.Instance != null) PlayerController.Instance.MoveSpeed += data.increaseValue;
+                    if (PlayerController.Instance != null) PlayerController.Instance.IncreaseMoveSpeedPercent(data.increaseValue);
                     break;
                 case UpgradeType.LightIntensity:
                     var attack = PlayerController.Instance != null ? PlayerController.Instance.GetComponentInChildren<FlashLightAttack>() : null;
-                    if (attack != null)
-                    {
-                        attack.damagePerSecond += data.increaseValue;
-                        if (attack.lightComponent != null) attack.lightComponent.intensity += data.increaseValue * 0.1f;
-                    }
+                    if (attack != null) attack.IncreaseDamage(data.increaseValue);
                     break;
                 case UpgradeType.Durability:
                     var health = PlayerController.Instance != null ? PlayerController.Instance.GetComponent<PlayerHealth>() : null;
-                    if (health != null) health.IncreaseMaxHealth(data.increaseValue);
+                    if (health != null) health.IncreaseDurability(data.increaseValue);
                     break;
                 case UpgradeType.LightRadius:
                     var attackRad = PlayerController.Instance != null ? PlayerController.Instance.GetComponentInChildren<FlashLightAttack>() : null;
-                    if (attackRad != null)
-                    {
-                        attackRad.angle += data.increaseValue;
-                        attackRad.range += data.increaseValue * 0.2f;
-                        if (attackRad.lightComponent != null)
-                        {
-                            attackRad.lightComponent.spotAngle += data.increaseValue;
-                            attackRad.lightComponent.range += data.increaseValue * 0.2f;
-                        }
-                    }
+                    if (attackRad != null) attackRad.IncreaseDiameterPercent(data.increaseValue);
                     break;
                 case UpgradeType.AuraWisp:
                     if (AuraController.Instance != null) AuraController.Instance.AddWisp();

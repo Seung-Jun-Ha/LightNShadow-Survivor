@@ -34,6 +34,7 @@ namespace LightNShadowSurvivor
         public bool IsDead => isDead;
         public float CurrentHealth => currentHealth;
         public float CurrentShield => currentShield;
+        public float MaxHealth => maxHealth;
 
         protected virtual void Awake()
         {
@@ -70,6 +71,16 @@ namespace LightNShadowSurvivor
             {
                 Die();
             }
+        }
+
+        public virtual void ConfigureForRound(float health, float xpReward)
+        {
+            maxHealth = Mathf.Max(1f, health);
+            currentHealth = maxHealth;
+            shieldHealth = 0f;
+            currentShield = 0f;
+            reactionType = GhostReactionType.Normal;
+            experienceReward = Mathf.Max(0f, xpReward);
         }
 
         protected virtual void Die()

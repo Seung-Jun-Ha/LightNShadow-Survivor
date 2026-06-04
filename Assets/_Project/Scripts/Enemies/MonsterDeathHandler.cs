@@ -126,6 +126,11 @@ namespace LightNShadowSurvivor
             }
         }
 
+        public void ConfigureExperienceReward(float amount)
+        {
+            xpValue = Mathf.Max(0f, amount);
+        }
+
         private Material[] GetAllMaterials()
         {
             var mats = new System.Collections.Generic.List<Material>();

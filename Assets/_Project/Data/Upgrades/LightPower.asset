@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: LightPower
   m_EditorClassIdentifier: Assembly-CSharp::LightNShadowSurvivor.UpgradeData
   upgradeName: LightPower
-  description: Increase flashlight intensity by 2.0
+  description: Increase flashlight damage by 0.5 per second
   icon: {fileID: 0}
   upgradeType: 2
-  increaseValue: 2
+  increaseValue: 0.5

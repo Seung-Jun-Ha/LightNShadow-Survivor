@@ -17,6 +17,11 @@ namespace LightNShadowSurvivor
 
         public float MoveSpeed { get => moveSpeed; set => moveSpeed = value; }
 
+        public void IncreaseMoveSpeedPercent(float percent)
+        {
+            moveSpeed *= 1f + Mathf.Max(0f, percent);
+        }
+
         private Rigidbody rb;
         private CapsuleCollider capsuleCollider;
         private Animator animator;

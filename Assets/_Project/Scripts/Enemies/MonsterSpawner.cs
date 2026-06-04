@@ -6,16 +6,20 @@ namespace LightNShadowSurvivor
 {
     public class MonsterSpawner : MonoBehaviour
     {
+        private const float Round1SpawnInterval = 1f;
+        private const float Round2SpawnInterval = 2f;
+        private const float Round1Health = 2f;
+        private const float Round2Health = 4f;
+        private const float BossHealth = 30f;
+        private const float Round1Experience = 3f;
+        private const float Round2Experience = 5f;
+
         [Header("Spawn Settings")]
         [SerializeField] private List<GameObject> round1Monsters;
         [SerializeField] private List<GameObject> round2Monsters;
         [SerializeField] private List<GameObject> round3Monsters;
         [SerializeField] private GameObject bossPrefab;
-        [SerializeField] private float bossLightExposureSeconds = 20f;
         [SerializeField] private float spawnRadius = 10f;
-        [SerializeField] private float round1SpawnInterval = 1.2f;
-        [SerializeField] private float round2SpawnInterval = 0.9f;
-        [SerializeField] private float round3SpawnInterval = 0.6f;
         [SerializeField] private float startDelay = 2f;
         [SerializeField] private int maxMonsters = 50;
 
@@ -66,7 +70,7 @@ namespace LightNShadowSurvivor
             }
         }
 
-                public void SetRound(int round)
+        public void SetRound(int round)
         {
             if (currentRound != round)
             {
@@ -100,9 +104,12 @@ namespace LightNShadowSurvivor
 
                 if (player != null && activeMonsters.Count < maxMonsters)
                 {
-                    if (currentRound == 3 && !bossSpawned && bossPrefab != null)
+                    if (currentRound == 3)
                     {
-                        SpawnBoss();
+                        if (!bossSpawned && bossPrefab != null)
+                        {
+                            SpawnBoss();
+                        }
                     }
                     else
                     {
@@ -121,21 +128,18 @@ namespace LightNShadowSurvivor
             GameObject boss = Instantiate(bossPrefab, spawnPos, Quaternion.identity);
             activeMonsters.Add(boss);
             SetupEnemyLayer(boss);
-            ConfigureBossHealth(boss);
+            ConfigureBoss(boss);
         }
 
-        private void ConfigureBossHealth(GameObject boss)
+        private void ConfigureBoss(GameObject boss)
         {
             var bossBase = boss.GetComponentInChildren<BossBase>();
             if (bossBase == null) return;
 
-            var attack = PlayerController.Instance != null
-                ? PlayerController.Instance.GetComponentInChildren<FlashLightAttack>()
-                : FindAnyObjectByType<FlashLightAttack>();
-            float damagePerSecond = attack != null ? attack.damagePerSecond : 85f;
-
-            bossBase.ConfigureHealthForLightExposure(damagePerSecond, bossLightExposureSeconds);
-            Debug.Log($"[MonsterSpawner] Boss HP configured for {bossLightExposureSeconds:F1}s light exposure at {damagePerSecond:F1} DPS.");
+            bossBase.ConfigureBoss(BossHealth);
+            var deathHandler = boss.GetComponentInChildren<MonsterDeathHandler>();
+            if (deathHandler != null) deathHandler.ConfigureExperienceReward(0f);
+            Debug.Log($"[MonsterSpawner] Boss HP configured to {BossHealth:F0}.");
         }
 
         private void SpawnMonster()
@@ -155,7 +159,14 @@ namespace LightNShadowSurvivor
                 return;
             }
 
-            GameObject prefab = monsterPool[Random.Range(0, monsterPool.Count)];
+            List<GameObject> sanitizedPool = GetSanitizedPool(monsterPool);
+            if (sanitizedPool.Count == 0)
+            {
+                Debug.LogWarning("[MonsterSpawner] No usable regular monster prefab remains after removing special variants.");
+                return;
+            }
+
+            GameObject prefab = sanitizedPool[Random.Range(0, sanitizedPool.Count)];
             Vector3 spawnPos = GetRandomPositionAroundPlayer();
             Debug.Log($"[MonsterSpawner] Calculated spawn position: {spawnPos}");
             
@@ -164,6 +175,7 @@ namespace LightNShadowSurvivor
             Debug.Log($"[MonsterSpawner] Successfully instantiated {spawned.name}");
             
             SetupEnemyLayer(spawned);
+            ConfigureRegularMonster(spawned);
         }
 
         private void SetupEnemyLayer(GameObject obj)
@@ -182,9 +194,80 @@ namespace LightNShadowSurvivor
         {
             switch (currentRound)
             {
-                case 1: return round1SpawnInterval;
-                case 2: return round2SpawnInterval;
-                default: return round3SpawnInterval;
+                case 1: return Round1SpawnInterval;
+                case 2: return Round2SpawnInterval;
+                default: return 1f;
+            }
+        }
+
+        private void ConfigureRegularMonster(GameObject monster)
+        {
+            DisableRemovedVariantBehaviors(monster);
+
+            MonsterBase monsterBase = monster.GetComponentInChildren<MonsterBase>();
+            if (monsterBase == null) monsterBase = monster.AddComponent<MonsterBase>();
+
+            float health = currentRound == 1 ? Round1Health : Round2Health;
+            float experience = currentRound == 1 ? Round1Experience : Round2Experience;
+            monsterBase.ConfigureForRound(health, experience);
+
+            MonsterDeathHandler deathHandler = monster.GetComponentInChildren<MonsterDeathHandler>();
+            if (deathHandler != null) deathHandler.ConfigureExperienceReward(experience);
+        }
+
+        private static List<GameObject> GetSanitizedPool(List<GameObject> source)
+        {
+            var sanitized = new List<GameObject>();
+            if (source == null) return sanitized;
+
+            foreach (GameObject prefab in source)
+            {
+                if (prefab != null && !IsRemovedVariant(prefab))
+                {
+                    sanitized.Add(prefab);
+                }
+            }
+
+            if (sanitized.Count == 0)
+            {
+                GameObject fallback = source.Find(prefab => prefab != null);
+                if (fallback != null)
+                {
+                    sanitized.Add(fallback);
+                    Debug.LogWarning($"[MonsterSpawner] Converting removed variant '{fallback.name}' to a normal monster because no normal prefab is assigned.");
+                }
+            }
+
+            return sanitized;
+        }
+
+        private static bool IsRemovedVariant(GameObject prefab)
+        {
+            string lowerName = prefab.name.ToLowerInvariant();
+            return prefab.GetComponentInChildren<ShieldGhost>(true) != null
+                || prefab.GetComponentInChildren<TeleportGhost>(true) != null
+                || prefab.GetComponentInChildren<BlobShadow>(true) != null
+                || lowerName.Contains("shield")
+                || lowerName.Contains("teleport")
+                || lowerName.Contains("split")
+                || lowerName.Contains("blob");
+        }
+
+        private static void DisableRemovedVariantBehaviors(GameObject monster)
+        {
+            foreach (ShieldGhost shield in monster.GetComponentsInChildren<ShieldGhost>(true))
+            {
+                shield.enabled = false;
+            }
+
+            foreach (TeleportGhost teleport in monster.GetComponentsInChildren<TeleportGhost>(true))
+            {
+                teleport.enabled = false;
+            }
+
+            foreach (BlobShadow blob in monster.GetComponentsInChildren<BlobShadow>(true))
+            {
+                blob.enabled = false;
             }
         }
 
@@ -220,6 +303,6 @@ namespace LightNShadowSurvivor
             spawnPos.y = player.position.y; 
             return spawnPos;
         }
-}
+    }
 }
 

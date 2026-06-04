@@ -7,6 +7,7 @@ namespace LightNShadowSurvivor
     public class BossBase : MonsterBase
     {
         [Header("Boss Settings")]
+        [SerializeField] private bool enableBehavior;
         [SerializeField] private float vulnerabilityTime = 5f;
         [SerializeField] private GameObject shieldVisual;
         [SerializeField] private float dashCooldown = 8f;
@@ -35,14 +36,17 @@ namespace LightNShadowSurvivor
             
             dashTimer = dashCooldown;
             spawnTimer = minionSpawnInterval;
+
+            if (!enableBehavior)
+            {
+                StopBehavior();
+            }
         }
 
-        public void ConfigureHealthForLightExposure(float lightDamagePerSecond, float exposureSeconds)
+        public void ConfigureBoss(float health)
         {
-            float configuredHealth = Mathf.Max(1f, lightDamagePerSecond * exposureSeconds);
-
-            maxHealth = configuredHealth;
-            currentHealth = configuredHealth;
+            maxHealth = Mathf.Max(1f, health);
+            currentHealth = maxHealth;
             shieldHealth = 0f;
             currentShield = 0f;
             reactionType = GhostReactionType.Boss;
@@ -86,7 +90,7 @@ namespace LightNShadowSurvivor
 
         void Update()
         {
-            if (isDead) return;
+            if (isDead || !enableBehavior) return;
 
             if (isVulnerable)
             {
@@ -157,6 +161,17 @@ namespace LightNShadowSurvivor
             if (agent != null) agent.speed = originalSpeed;
             
             OnVulnerableEnded?.Invoke();
+        }
+
+        protected override void Die()
+        {
+            if (isDead) return;
+
+            base.Die();
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.TriggerEnding();
+            }
         }
     }
 }
