@@ -126,5 +126,5 @@ AssetOrigin:
   productId: 267003
   packageName: Ghost character Free
   packageVersion: 1.0
-  assetPath: Assets/GhostCharacter_Free/Textures/texture_BlockGrass.png
+  assetPath: Assets/ThirdParty/GhostCharacter_Free/Textures/texture_BlockGrass.png
   uploadId: 617687

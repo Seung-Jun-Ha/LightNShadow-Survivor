@@ -80,8 +80,7 @@ namespace LightNShadowSurvivor
                     
                     if (receiver != null)
                     {
-                        // Use high damage for testing
-                        receiver.TakeLightDamage(1000f * Time.deltaTime);
+                        receiver.TakeLightDamage(damagePerSecond * Time.deltaTime);
                         if (Time.frameCount % 10 == 0) 
                             Debug.Log($"[FlashLightAttack] HIT: {col.name}, Angle2D: {angleToTarget:F1}");
                     }
@@ -101,4 +100,3 @@ namespace LightNShadowSurvivor
         }
     }
 }
-

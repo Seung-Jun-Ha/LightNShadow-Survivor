@@ -37,6 +37,19 @@ namespace LightNShadowSurvivor
             spawnTimer = minionSpawnInterval;
         }
 
+        public void ConfigureHealthForLightExposure(float lightDamagePerSecond, float exposureSeconds)
+        {
+            float configuredHealth = Mathf.Max(1f, lightDamagePerSecond * exposureSeconds);
+
+            maxHealth = configuredHealth;
+            currentHealth = configuredHealth;
+            shieldHealth = 0f;
+            currentShield = 0f;
+            reactionType = GhostReactionType.Boss;
+
+            if (shieldVisual != null) shieldVisual.SetActive(false);
+        }
+
         public override void ModifyHealth(float amount)
         {
             if (isDead) return;

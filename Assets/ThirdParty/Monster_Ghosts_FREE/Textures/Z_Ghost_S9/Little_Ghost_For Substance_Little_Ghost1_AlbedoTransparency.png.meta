@@ -138,5 +138,6 @@ AssetOrigin:
   productId: 308550
   packageName: Cute Monster Ghost's FREE
   packageVersion: 1.0
-  assetPath: Assets/Monster_Ghosts_FREE/Textures/Z_Ghost_S9/Little_Ghost_For Substance_Little_Ghost1_AlbedoTransparency.png
+  assetPath: Assets/ThirdParty/Monster_Ghosts_FREE/Textures/Z_Ghost_S9/Little_Ghost_For
+    Substance_Little_Ghost1_AlbedoTransparency.png
   uploadId: 725868

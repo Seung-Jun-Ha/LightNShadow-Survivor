@@ -11,6 +11,7 @@ namespace LightNShadowSurvivor
         [SerializeField] private List<GameObject> round2Monsters;
         [SerializeField] private List<GameObject> round3Monsters;
         [SerializeField] private GameObject bossPrefab;
+        [SerializeField] private float bossLightExposureSeconds = 20f;
         [SerializeField] private float spawnRadius = 10f;
         [SerializeField] private float spawnInterval = 1.0f;
         [SerializeField] private float startDelay = 2f;
@@ -113,6 +114,21 @@ namespace LightNShadowSurvivor
             GameObject boss = Instantiate(bossPrefab, spawnPos, Quaternion.identity);
             activeMonsters.Add(boss);
             SetupEnemyLayer(boss);
+            ConfigureBossHealth(boss);
+        }
+
+        private void ConfigureBossHealth(GameObject boss)
+        {
+            var bossBase = boss.GetComponentInChildren<BossBase>();
+            if (bossBase == null) return;
+
+            var attack = PlayerController.Instance != null
+                ? PlayerController.Instance.GetComponentInChildren<FlashLightAttack>()
+                : FindAnyObjectByType<FlashLightAttack>();
+            float damagePerSecond = attack != null ? attack.damagePerSecond : 85f;
+
+            bossBase.ConfigureHealthForLightExposure(damagePerSecond, bossLightExposureSeconds);
+            Debug.Log($"[MonsterSpawner] Boss HP configured for {bossLightExposureSeconds:F1}s light exposure at {damagePerSecond:F1} DPS.");
         }
 
         private void SpawnMonster()
