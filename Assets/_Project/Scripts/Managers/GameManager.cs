@@ -24,6 +24,14 @@ namespace LightNShadowSurvivor
             else Destroy(gameObject);
         }
 
+        private void OnDestroy()
+        {
+            if (Instance == this)
+            {
+                Instance = null;
+            }
+        }
+
         private System.Collections.IEnumerator Start()
         {
             yield return StartCoroutine(LoadUISceneRoutine());
@@ -55,24 +63,47 @@ namespace LightNShadowSurvivor
         {
             if (currentState == newState && newState != GameState.Round) return; // Allow re-entering Round for next waves
             
+            GameState previousState = currentState;
             currentState = newState;
             Debug.Log($"[GameManager] State changed to: {newState}");
             
             switch (newState)
             {
+                case GameState.MainMenu:
+                    Time.timeScale = 0f;
+                    Cursor.visible = true;
+                    Cursor.lockState = CursorLockMode.None;
+                    break;
                 case GameState.Intro:
                     // Initialize or show intro UI
                     break;
                 case GameState.Round:
+                    if (previousState == GameState.MainMenu || previousState == GameState.GameOver || previousState == GameState.Ending)
+                    {
+                        if (GameStatsManager.Instance != null)
+                        {
+                            GameStatsManager.Instance.ResetStats();
+                        }
+                    }
+
                     Time.timeScale = 1f;
+                    Cursor.visible = false;
+                    Cursor.lockState = CursorLockMode.Locked;
                     break;
                 case GameState.Upgrade:
                     Time.timeScale = 0f;
+                    Cursor.visible = true;
+                    Cursor.lockState = CursorLockMode.None;
                     break;
                 case GameState.Ending:
+                    Time.timeScale = 1f;
+                    Cursor.visible = true;
+                    Cursor.lockState = CursorLockMode.None;
                     break;
                 case GameState.GameOver:
-                    // Time.timeScale = 0f; // Let the death handler finish its work
+                    Time.timeScale = 0f;
+                    Cursor.visible = true;
+                    Cursor.lockState = CursorLockMode.None;
                     break;
             }
 

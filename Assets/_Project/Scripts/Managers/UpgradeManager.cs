@@ -31,6 +31,13 @@ namespace LightNShadowSurvivor
 
         public void ApplyUpgrade(UpgradeData data)
         {
+            if (data == null)
+            {
+                Debug.LogWarning("[UpgradeManager] Tried to apply a null upgrade.");
+                ResumeAfterUpgradeSelection();
+                return;
+            }
+
             Debug.Log($"[UpgradeManager] Applying upgrade: {data.upgradeName}");
 
             switch (data.upgradeType)
@@ -68,7 +75,13 @@ namespace LightNShadowSurvivor
                     break;
             }
 
-            // After applying, proceed
+            ResumeAfterUpgradeSelection();
+        }
+
+        public void ResumeAfterUpgradeSelection()
+        {
+            if (GameManager.Instance == null || RoundManager.Instance == null) return;
+
             if (GameManager.Instance.CurrentState == GameState.Upgrade)
             {
                 if (RoundManager.Instance.TimeRemaining <= 0)

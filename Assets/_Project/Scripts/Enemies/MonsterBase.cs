@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System;
 
 namespace LightNShadowSurvivor
@@ -21,6 +21,8 @@ namespace LightNShadowSurvivor
         [SerializeField] protected float maxHealth = 100f;
         [SerializeField] protected float shieldHealth = 0f;
         [SerializeField] protected GhostReactionType reactionType = GhostReactionType.Normal;
+        [SerializeField] protected float experienceReward = 25f;
+        [SerializeField] private bool grantExperienceDirectly = true;
 
         protected float currentHealth;
         protected float currentShield;
@@ -29,6 +31,9 @@ namespace LightNShadowSurvivor
         public event Action OnDeath;
 
         public GhostReactionType ReactionType => reactionType;
+        public bool IsDead => isDead;
+        public float CurrentHealth => currentHealth;
+        public float CurrentShield => currentShield;
 
         protected virtual void Awake()
         {
@@ -39,8 +44,6 @@ namespace LightNShadowSurvivor
         public virtual void ModifyHealth(float amount)
         {
             if (isDead) return;
-
-            Debug.Log($"[MonsterBase] {gameObject.name} modified by {amount}. Current HP: {currentHealth}");
 
             // Damage is negative amount
             if (amount < 0)
@@ -65,7 +68,6 @@ namespace LightNShadowSurvivor
 
             if (currentHealth <= 0)
             {
-                Debug.Log($"[MonsterBase] {gameObject.name} HP reached 0. Triggering Die().");
                 Die();
             }
         }
@@ -74,11 +76,29 @@ namespace LightNShadowSurvivor
         {
             if (isDead) return;
             isDead = true;
-            Debug.Log($"[MonsterBase] {gameObject.name} logic marked as DEAD. Invoking OnDeath.");
+            if (grantExperienceDirectly && !TryGetComponent<MonsterDeathHandler>(out _))
+            {
+                GrantExperience();
+            }
+
             OnDeath?.Invoke();
-            
-            // Fallback destroy if no handler takes over
             Destroy(gameObject, 5f);
+        }
+        public virtual void StopBehavior()
+        {
+            if (TryGetComponent(out GhostAI ai)) ai.StopAI();
+            if (TryGetComponent(out UnityEngine.AI.NavMeshAgent agent) && agent.isOnNavMesh)
+            {
+                agent.isStopped = true;
+                agent.ResetPath();
+            }
+        }
+
+        private void GrantExperience()
+        {
+            if (experienceReward <= 0f || PlayerExperience.Instance == null) return;
+            PlayerExperience.Instance.AddXP(experienceReward);
         }
     }
 }
+

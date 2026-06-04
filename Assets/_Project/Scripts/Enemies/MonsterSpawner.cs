@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -13,7 +13,9 @@ namespace LightNShadowSurvivor
         [SerializeField] private GameObject bossPrefab;
         [SerializeField] private float bossLightExposureSeconds = 20f;
         [SerializeField] private float spawnRadius = 10f;
-        [SerializeField] private float spawnInterval = 1.0f;
+        [SerializeField] private float round1SpawnInterval = 1.2f;
+        [SerializeField] private float round2SpawnInterval = 0.9f;
+        [SerializeField] private float round3SpawnInterval = 0.6f;
         [SerializeField] private float startDelay = 2f;
         [SerializeField] private int maxMonsters = 50;
 
@@ -64,8 +66,13 @@ namespace LightNShadowSurvivor
             }
         }
 
-        public void SetRound(int round)
+                public void SetRound(int round)
         {
+            if (currentRound != round)
+            {
+                bossSpawned = false;
+            }
+
             currentRound = round;
         }
 
@@ -102,7 +109,7 @@ namespace LightNShadowSurvivor
                         SpawnMonster();
                     }
                 }
-                yield return new WaitForSeconds(spawnInterval);
+                yield return new WaitForSeconds(GetCurrentSpawnInterval());
             }
         }
 
@@ -171,6 +178,28 @@ namespace LightNShadowSurvivor
                 }
             }
         }
+        private float GetCurrentSpawnInterval()
+        {
+            switch (currentRound)
+            {
+                case 1: return round1SpawnInterval;
+                case 2: return round2SpawnInterval;
+                default: return round3SpawnInterval;
+            }
+        }
+
+        public void StopAndClearMonsters()
+        {
+            StopSpawning();
+            activeMonsters.RemoveAll(m => m == null);
+            foreach (GameObject monster in activeMonsters)
+            {
+                if (monster == null) continue;
+                if (monster.TryGetComponent(out MonsterBase monsterBase)) monsterBase.StopBehavior();
+                Destroy(monster, 0.25f);
+            }
+            activeMonsters.Clear();
+        }
 
         private Vector3 GetRandomPositionAroundPlayer()
         {
@@ -193,3 +222,4 @@ namespace LightNShadowSurvivor
         }
 }
 }
+

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System;
 
 namespace LightNShadowSurvivor
@@ -7,11 +7,18 @@ namespace LightNShadowSurvivor
     {
         [SerializeField] private float maxHealth = 100f;
         private float currentHealth;
+        private bool isDead;
 
         public void IncreaseMaxHealth(float amount)
         {
+            if (amount <= 0f) return;
+
             maxHealth += amount;
-            currentHealth += amount; // Also heal for that amount
+            if (!isDead)
+            {
+                currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
+            }
+
             OnHealthChanged?.Invoke(currentHealth);
         }
 
@@ -20,6 +27,7 @@ namespace LightNShadowSurvivor
 
         public float CurrentHealth => currentHealth;
         public float MaxHealth => maxHealth;
+        public bool IsDead => isDead;
 
         private void Awake()
         {
@@ -28,6 +36,8 @@ namespace LightNShadowSurvivor
 
         public void TakeDamage(float amount)
         {
+            if (isDead || amount <= 0f) return;
+
             currentHealth -= amount;
             currentHealth = Mathf.Max(currentHealth, 0);
             
@@ -41,6 +51,8 @@ namespace LightNShadowSurvivor
 
         public void Heal(float amount)
         {
+            if (isDead || amount <= 0f) return;
+
             currentHealth += amount;
             currentHealth = Mathf.Min(currentHealth, maxHealth);
             OnHealthChanged?.Invoke(currentHealth);
@@ -48,9 +60,17 @@ namespace LightNShadowSurvivor
 
         private void Die()
         {
+            if (isDead) return;
+
+            isDead = true;
             Debug.Log("Player Died!");
             OnPlayerDeath?.Invoke();
-            // You can add more logic here, like game over screen
+
+            if (GetComponent<PlayerDeathHandler>() == null && GameManager.Instance != null)
+            {
+                GameManager.Instance.TriggerGameOver();
+            }
         }
     }
 }
+

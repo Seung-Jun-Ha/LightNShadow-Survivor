@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.AI;
 
 namespace LightNShadowSurvivor
@@ -162,23 +162,29 @@ namespace LightNShadowSurvivor
             }
         }
 
-        public void ApplySlow()
+                public void ApplySlow()
+        {
+            ApplySlow(0.5f, 0.2f);
+        }
+
+        public void ApplySlow(float speedMultiplier, float duration)
         {
             isSlowing = true;
-            slowTimer = 0.2f; // Short duration, refreshed by FlashLightAttack
-            
-            float slowFactor = 0.5f; // Default 50% slow
-            if (monsterBase != null)
+            slowTimer = Mathf.Max(slowTimer, duration);
+
+            if (agent != null && agent.isOnNavMesh)
             {
-                if (monsterBase.ReactionType == GhostReactionType.Fast)
-                {
-                    slowFactor = 0.2f; // 80% slow for Fast ghosts
-                }
+                agent.speed = originalSpeed * Mathf.Clamp01(speedMultiplier);
             }
-            
-            if (agent.isOnNavMesh)
+        }
+
+        public void StopAI()
+        {
+            enabled = false;
+            if (agent != null && agent.isOnNavMesh)
             {
-                agent.speed = originalSpeed * slowFactor;
+                agent.isStopped = true;
+                agent.ResetPath();
             }
         }
 
@@ -219,3 +225,4 @@ namespace LightNShadowSurvivor
         }
     }
 }
+

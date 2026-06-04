@@ -1,5 +1,5 @@
-using UnityEngine;
-using System.Collections;
+﻿using UnityEngine;
+using System;
 
 namespace LightNShadowSurvivor
 {
@@ -13,11 +13,18 @@ namespace LightNShadowSurvivor
         [SerializeField] private float round3Duration = 120f;
 
         private int currentRound = 1;
+        private int startedRound;
         private float timer;
-        private bool isTimerRunning = false;
+        private float elapsedTime;
+        private bool isTimerRunning;
+
+        public event Action<int> OnRoundStarted;
+        public event Action<int> OnRoundEnded;
+        public event Action<float, float> OnRoundTimeChanged;
 
         public int CurrentRound => currentRound;
         public float TimeRemaining => timer;
+        public float TimeElapsed => elapsedTime;
 
         private void Awake()
         {
@@ -30,7 +37,6 @@ namespace LightNShadowSurvivor
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.OnStateChanged += HandleStateChanged;
-                // Handle initial state
                 HandleStateChanged(GameManager.Instance.CurrentState);
             }
         }
@@ -39,46 +45,73 @@ namespace LightNShadowSurvivor
         {
             if (GameManager.Instance != null)
                 GameManager.Instance.OnStateChanged -= HandleStateChanged;
+
+            if (Instance == this)
+            {
+                Instance = null;
+            }
         }
 
         private void HandleStateChanged(GameState state)
         {
             if (state == GameState.Round)
             {
-                StartRoundTimer();
+                if (startedRound == currentRound && timer > 0f)
+                {
+                    isTimerRunning = true;
+                    OnRoundTimeChanged?.Invoke(timer, elapsedTime);
+                }
+                else
+                {
+                    StartRoundTimer();
+                }
+            }
+            else
+            {
+                isTimerRunning = false;
             }
         }
 
         private void StartRoundTimer()
         {
-            switch (currentRound)
-            {
-                case 1: timer = round1Duration; break;
-                case 2: timer = round2Duration; break;
-                case 3: timer = round3Duration; break;
-            }
+            startedRound = currentRound;
+            timer = GetRoundDuration(currentRound);
+            elapsedTime = 0f;
             isTimerRunning = true;
-            
-            // Update Spawner
-            var spawner = FindFirstObjectByType<MonsterSpawner>();
+
+            var spawner = FindAnyObjectByType<MonsterSpawner>();
             if (spawner != null) spawner.SetRound(currentRound);
+
+            OnRoundStarted?.Invoke(currentRound);
+            OnRoundTimeChanged?.Invoke(timer, elapsedTime);
         }
 
         private void Update()
         {
             if (!isTimerRunning) return;
 
-            timer -= Time.deltaTime;
-            if (timer <= 0)
+            float delta = Time.deltaTime;
+            elapsedTime += delta;
+            timer = Mathf.Max(0f, timer - delta);
+            OnRoundTimeChanged?.Invoke(timer, elapsedTime);
+
+            if (timer <= 0f)
             {
-                timer = 0;
                 EndRound();
             }
         }
 
         private void EndRound()
         {
+            if (!isTimerRunning) return;
+
             isTimerRunning = false;
+            OnRoundEnded?.Invoke(currentRound);
+
+            var spawner = FindAnyObjectByType<MonsterSpawner>();
+            if (spawner != null) spawner.StopAndClearMonsters();
+
+            if (GameManager.Instance == null) return;
 
             if (currentRound < 3)
             {
@@ -92,8 +125,19 @@ namespace LightNShadowSurvivor
 
         public void ProceedToNextRound()
         {
-            currentRound++;
-            GameManager.Instance.StartRound();
+            currentRound = Mathf.Clamp(currentRound + 1, 1, 3);
+            if (GameManager.Instance != null) GameManager.Instance.StartRound();
+        }
+
+        private float GetRoundDuration(int round)
+        {
+            switch (round)
+            {
+                case 1: return round1Duration;
+                case 2: return round2Duration;
+                default: return round3Duration;
+            }
         }
     }
 }
+
