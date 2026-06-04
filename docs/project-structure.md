@@ -96,7 +96,7 @@
 
 ## 2026-06-02 구현 현황 문서
 
-`docs/implementation-status.md`를 추가했습니다. 이 문서는 현재 구현 정도, 전체 구현율, 자동화 테스트 결과, 남은 리스크, 다음 우선순위를 기록합니다.
+`docs/implementation-status.md`는 현재 구현 정도, 전체 구현율, 자동화 테스트 결과, 남은 리스크, 다음 우선순위를 기록합니다. 세부 실행 목록과 테스트 메모는 `docs/implementation-backlog.md`로 분리했습니다.
 
 테스트 관련 파일 위치:
 

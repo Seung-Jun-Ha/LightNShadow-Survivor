@@ -1,32 +1,70 @@
+using System;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-public class StageManager : MonoBehaviour
+namespace LightNShadowSurvivor
 {
-    public int totalStages = 3;
-    private int currentStage = 0;
-
-    public TimeOfDayManager timeOfDayManager;
-
-    public void CompleteStage()
+    public class StageManager : MonoBehaviour
     {
-        currentStage++;
-        Debug.Log($"Stage {currentStage} cleared!");
+        [SerializeField] private int totalStages = 3;
+        [SerializeField] private TimeOfDayManager timeOfDayManager;
+        [SerializeField] private bool completeStageWhenRoundEnds = true;
 
-        if (currentStage >= totalStages)
+        private int currentStage;
+        private bool allStagesCleared;
+
+        public event Action<int> OnStageCompleted;
+        public event Action OnAllStagesCleared;
+
+        public int CurrentStage => currentStage;
+        public int TotalStages => totalStages;
+        public bool AllStagesCleared => allStagesCleared;
+
+        private void Start()
         {
-            if (timeOfDayManager != null)
-            {
-                timeOfDayManager.ClearAllStages();
-            }
-            Debug.Log("All stages cleared! Transitioning to morning...");
-        }
-    }
+            if (timeOfDayManager == null) timeOfDayManager = FindAnyObjectByType<TimeOfDayManager>();
 
-    // For testing
-    private void Update()
-    {
-        if (Keyboard.current != null && Keyboard.current.lKey.wasPressedThisFrame)
+            if (completeStageWhenRoundEnds && RoundManager.Instance != null)
+            {
+                RoundManager.Instance.OnRoundEnded += HandleRoundEnded;
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (RoundManager.Instance != null)
+            {
+                RoundManager.Instance.OnRoundEnded -= HandleRoundEnded;
+            }
+        }
+
+        public void CompleteStage()
+        {
+            if (allStagesCleared) return;
+
+            currentStage = Mathf.Clamp(currentStage + 1, 0, Mathf.Max(1, totalStages));
+            Debug.Log($"Stage {currentStage} cleared!");
+            OnStageCompleted?.Invoke(currentStage);
+
+            if (currentStage >= totalStages)
+            {
+                allStagesCleared = true;
+                if (timeOfDayManager != null)
+                {
+                    timeOfDayManager.ClearAllStages();
+                }
+
+                Debug.Log("All stages cleared! Transitioning to morning...");
+                OnAllStagesCleared?.Invoke();
+            }
+        }
+
+        public void ResetProgress()
+        {
+            currentStage = 0;
+            allStagesCleared = false;
+        }
+
+        private void HandleRoundEnded(int round)
         {
             CompleteStage();
         }

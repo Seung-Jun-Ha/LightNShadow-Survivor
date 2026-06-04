@@ -10,6 +10,7 @@ namespace LightNShadowSurvivor
         
         private PlayerHealth playerHealth;
         private Renderer[] renderers;
+        private bool deathRoutineStarted;
 
         private void Awake()
         {
@@ -29,6 +30,8 @@ namespace LightNShadowSurvivor
 
         private void HandleDeath()
         {
+            if (deathRoutineStarted) return;
+            deathRoutineStarted = true;
             StartCoroutine(DeathRoutine());
         }
 
@@ -41,30 +44,31 @@ namespace LightNShadowSurvivor
             var pa = GetComponent<PlayerAim>();
             if (pa != null) pa.enabled = false;
 
-            // 2. Switch materials to dissolve
             var dissolveMaterials = new System.Collections.Generic.List<Material>();
-            foreach (var r in renderers)
+            if (dissolveMaterialBase != null)
             {
-                Material[] newMats = new Material[r.sharedMaterials.Length];
-                for (int i = 0; i < r.sharedMaterials.Length; i++)
+                foreach (var r in renderers)
                 {
-                    Material oldMat = r.sharedMaterials[i];
-                    Material newMat = new Material(dissolveMaterialBase);
-                    if (oldMat != null)
+                    Material[] newMats = new Material[r.sharedMaterials.Length];
+                    for (int i = 0; i < r.sharedMaterials.Length; i++)
                     {
-                        if (oldMat.HasProperty("_MainTex")) newMat.SetTexture("_BaseMap", oldMat.GetTexture("_MainTex"));
-                        else if (oldMat.HasProperty("_BaseMap")) newMat.SetTexture("_BaseMap", oldMat.GetTexture("_BaseMap"));
-                        
-                        if (oldMat.HasProperty("_Color")) newMat.SetColor("_Color", oldMat.GetColor("_Color"));
-                        else if (oldMat.HasProperty("_BaseColor")) newMat.SetColor("_Color", oldMat.GetColor("_BaseColor"));
+                        Material oldMat = r.sharedMaterials[i];
+                        Material newMat = new Material(dissolveMaterialBase);
+                        if (oldMat != null)
+                        {
+                            if (oldMat.HasProperty("_MainTex") && newMat.HasProperty("_BaseMap")) newMat.SetTexture("_BaseMap", oldMat.GetTexture("_MainTex"));
+                            else if (oldMat.HasProperty("_BaseMap") && newMat.HasProperty("_BaseMap")) newMat.SetTexture("_BaseMap", oldMat.GetTexture("_BaseMap"));
+
+                            if (oldMat.HasProperty("_Color") && newMat.HasProperty("_Color")) newMat.SetColor("_Color", oldMat.GetColor("_Color"));
+                            else if (oldMat.HasProperty("_BaseColor") && newMat.HasProperty("_Color")) newMat.SetColor("_Color", oldMat.GetColor("_BaseColor"));
+                        }
+                        newMats[i] = newMat;
+                        dissolveMaterials.Add(newMat);
                     }
-                    newMats[i] = newMat;
-                    dissolveMaterials.Add(newMat);
+                    r.materials = newMats;
                 }
-                r.materials = newMats;
             }
 
-            // 3. Animate dissolve
             float elapsed = 0f;
             while (elapsed < dissolveDuration)
             {
@@ -72,7 +76,7 @@ namespace LightNShadowSurvivor
                 float t = 1f - (elapsed / dissolveDuration); // From 1 to 0
                 foreach (var mat in dissolveMaterials)
                 {
-                    mat.SetFloat("_Dissolve", t);
+                    if (mat != null && mat.HasProperty("_Dissolve")) mat.SetFloat("_Dissolve", t);
                 }
                 yield return null;
             }

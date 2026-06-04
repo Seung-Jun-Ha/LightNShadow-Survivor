@@ -1,6 +1,6 @@
 ﻿# Light & Shadow Survivor
 
-이 저장소는 Unity 기반의 `Light & Shadow Survivor` 프로젝트를 정리한 작업 공간입니다. 핵심 문서는 아래 4개로 나눠서 유지보수하기 쉽게 관리합니다.
+이 저장소는 Unity 기반의 `Light & Shadow Survivor` 프로젝트를 정리한 작업 공간입니다. 핵심 문서는 아래 5개로 나눠서 유지보수하기 쉽게 관리합니다.
 
 ## 문서 안내
 
@@ -8,6 +8,7 @@
 - [구현 방식](docs/implementation-method.md)
 - [목적 및 목표](docs/purpose-and-goals.md)
 - [구현 현황 및 전체 구현율](docs/implementation-status.md)
+- [구현 백로그](docs/implementation-backlog.md)
 
 ## 한 줄 요약
 
@@ -20,11 +21,11 @@
 - 릴리즈 후보 완성도: 약 55%
 - 전체 구현율: 약 60%
 
-상세 산정 근거와 남은 리스크는 [구현 현황 및 전체 구현율](docs/implementation-status.md)을 기준으로 관리합니다.
+상세 산정 근거와 남은 리스크는 [구현 현황 및 전체 구현율](docs/implementation-status.md)을 기준으로 관리하고, 실제 작업 목록은 [구현 백로그](docs/implementation-backlog.md)로 분리합니다.
 
 ## 유지보수 원칙
 
 - 구조 변경은 `docs/project-structure.md`를 먼저 갱신합니다.
 - 기능 추가나 밸런스 조정은 `docs/implementation-method.md`의 규칙을 따릅니다.
-- 구현률, 테스트 결과, 남은 리스크는 `docs/implementation-status.md`에 반영합니다.
+- 구현률과 남은 리스크는 `docs/implementation-status.md`에, 실행할 작업은 `docs/implementation-backlog.md`에 반영합니다.
 - 게임의 방향성 변경은 `docs/purpose-and-goals.md`에서 먼저 정리합니다.

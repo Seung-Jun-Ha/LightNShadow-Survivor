@@ -9,6 +9,7 @@ namespace LightNShadowSurvivor
         [SerializeField] private Transform rightHandBone;
         [SerializeField] private Transform rightForearmBone;
         [SerializeField] private Transform flashlightPivot;
+        [SerializeField] private Light aimLight;
         
         [Header("Settings")]
         [SerializeField] private float rotationSmoothSpeed = 15f;
@@ -30,6 +31,8 @@ namespace LightNShadowSurvivor
         private void Start()
         {
             mainCamera = Camera.main;
+            ResolveFlashlightPivot();
+
             var animator = GetComponentInChildren<Animator>();
             if (animator != null && animator.isHuman)
             {
@@ -42,9 +45,21 @@ namespace LightNShadowSurvivor
             if (rightForearmBone != null) currentForearmRot = rightForearmBone.rotation;
         }
 
+        private void ResolveFlashlightPivot()
+        {
+            if (aimLight == null) aimLight = GetComponentInChildren<Light>(true);
+            if (flashlightPivot == null && aimLight != null) flashlightPivot = aimLight.transform;
+            if (flashlightPivot == null)
+            {
+                FlashLightAttack attack = GetComponentInChildren<FlashLightAttack>(true);
+                if (attack != null) flashlightPivot = attack.transform;
+            }
+        }
+
         private void LateUpdate()
         {
             UpdateTargetPoint();
+            AimFlashlight();
 
             // Aim the arm bones
             if (rightForearmBone != null)
@@ -58,30 +73,33 @@ namespace LightNShadowSurvivor
                 currentHandRot = AimBoneSmoothly(rightHandBone, currentHandRot, handRotationOffset);
                 rightHandBone.rotation = currentHandRot;
             }
-
-            if (flashlightPivot != null)
-            {
-                flashlightPivot.localRotation = Quaternion.identity;
-            }
         }
 
         private void UpdateTargetPoint()
         {
-            if (Mouse.current == null || Camera.main == null) return;
+            if (Mouse.current == null) return;
+            if (mainCamera == null) mainCamera = Camera.main;
+            if (mainCamera == null) return;
 
             Vector2 mousePos = Mouse.current.position.ReadValue();
-            Ray ray = Camera.main.ScreenPointToRay(mousePos);
-            
-            // To ensure it points "forward" and not just at the ground:
-            // We use the mouse ray to find a point at a fixed distance from the camera,
-            // but we clamp its Y to be roughly at the player's height or higher.
-            Vector3 pointAtDistance = ray.GetPoint(aimDistance);
-            
-            // Limit how low the target can be to prevent pointing at feet
-            float minHeight = transform.position.y + 0.5f;
-            pointAtDistance.y = Mathf.Max(pointAtDistance.y, minHeight);
-            
-            currentTargetPoint = pointAtDistance;
+            Ray ray = mainCamera.ScreenPointToRay(mousePos);
+
+            Plane aimPlane = new Plane(Vector3.up, transform.position + Vector3.up * 0.8f);
+            if (aimPlane.Raycast(ray, out float enter))
+            {
+                currentTargetPoint = ClampVerticalTarget(ray.GetPoint(enter));
+            }
+            else
+            {
+                currentTargetPoint = ClampVerticalTarget(ray.GetPoint(aimDistance));
+            }
+        }
+
+        private Vector3 ClampVerticalTarget(Vector3 targetPoint)
+        {
+            float limit = Mathf.Max(0f, verticalLimit);
+            targetPoint.y = Mathf.Clamp(targetPoint.y, transform.position.y - limit, transform.position.y + limit);
+            return targetPoint;
         }
 
         private Quaternion AimBoneSmoothly(Transform bone, Quaternion currentRot, Vector3 offset)
@@ -93,6 +111,23 @@ namespace LightNShadowSurvivor
                 return Quaternion.Slerp(currentRot, targetRot, rotationSmoothSpeed * Time.deltaTime);
             }
             return currentRot;
+        }
+
+        private void AimFlashlight()
+        {
+            if (flashlightPivot == null) ResolveFlashlightPivot();
+            if (flashlightPivot == null) return;
+
+            AimTransformSmoothly(flashlightPivot);
+        }
+
+        private void AimTransformSmoothly(Transform target)
+        {
+            Vector3 direction = currentTargetPoint - target.position;
+            if (direction.sqrMagnitude <= 0.0001f) return;
+
+            Quaternion targetRot = Quaternion.LookRotation(direction.normalized, Vector3.up);
+            target.rotation = Quaternion.Slerp(target.rotation, targetRot, rotationSmoothSpeed * Time.deltaTime);
         }
 
         private void OnDrawGizmos()

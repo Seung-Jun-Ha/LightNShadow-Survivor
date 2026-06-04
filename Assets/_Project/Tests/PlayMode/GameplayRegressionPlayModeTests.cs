@@ -14,7 +14,7 @@ namespace LightNShadowSurvivor.Tests
         {
             Time.timeScale = 1f;
 
-            foreach (GameObject obj in UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (GameObject obj in UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include))
             {
                 if (obj == null) continue;
                 if (obj.name.StartsWith("GameplayRegressionTest_", StringComparison.Ordinal))
@@ -26,6 +26,8 @@ namespace LightNShadowSurvivor.Tests
             ResetSingleton("LightNShadowSurvivor.GameManager");
             ResetSingleton("LightNShadowSurvivor.RoundManager");
             ResetSingleton("LightNShadowSurvivor.PlayerExperience");
+            ResetSingleton("LightNShadowSurvivor.GameStatsManager");
+            ResetSingleton("LightNShadowSurvivor.PlayerController");
         }
 
         [UnityTest]
@@ -78,21 +80,105 @@ namespace LightNShadowSurvivor.Tests
         }
 
         [UnityTest]
-        public IEnumerator MonsterWithDeathHandlerDoesNotGrantDirectXP()
+        public IEnumerator MonsterDeathHandlerGrantsDirectXpWhenOrbPrefabIsMissing()
         {
             Component playerExperience = new GameObject("GameplayRegressionTest_PlayerExperience").AddComponent(FindType("LightNShadowSurvivor.PlayerExperience"));
             SetFieldValue(playerExperience, "xpToNextLevel", 999f, BindingFlags.Instance | BindingFlags.NonPublic);
 
             GameObject monster = new GameObject("GameplayRegressionTest_Monster");
             Component monsterBase = monster.AddComponent(FindType("LightNShadowSurvivor.MonsterBase"));
-            monster.AddComponent(FindType("LightNShadowSurvivor.MonsterDeathHandler"));
-            SetFieldValue(monsterBase, "experienceReward", 50f, BindingFlags.Instance | BindingFlags.NonPublic);
+            Component deathHandler = monster.AddComponent(FindType("LightNShadowSurvivor.MonsterDeathHandler"));
+            SetFieldValue(deathHandler, "xpValue", 50f, BindingFlags.Instance | BindingFlags.NonPublic);
             yield return null;
 
             Invoke(monsterBase, "ModifyHealth", -200f);
             yield return null;
 
+            Assert.AreEqual(50f, GetFloatProperty(playerExperience, "CurrentXP"));
+        }
+
+        [UnityTest]
+        public IEnumerator PlayerDeathHandlerTriggersGameOverAfterDeathRoutine()
+        {
+            Component gameManager = CreateGameManager();
+            GameObject player = new GameObject("GameplayRegressionTest_Player");
+            player.AddComponent(FindType("LightNShadowSurvivor.PlayerController"));
+            player.AddComponent(FindType("LightNShadowSurvivor.PlayerAim"));
+            Component health = player.AddComponent(FindType("LightNShadowSurvivor.PlayerHealth"));
+            Component deathHandler = player.AddComponent(FindType("LightNShadowSurvivor.PlayerDeathHandler"));
+            SetFieldValue(deathHandler, "dissolveDuration", 0.02f, BindingFlags.Instance | BindingFlags.NonPublic);
+            yield return null;
+
+            Invoke(health, "TakeDamage", 200f);
+            Assert.AreNotEqual("GameOver", GetPropertyValue(gameManager, "CurrentState").ToString());
+
+            float timeout = Time.realtimeSinceStartup + 1f;
+            while (Time.realtimeSinceStartup < timeout && GetPropertyValue(gameManager, "CurrentState").ToString() != "GameOver")
+            {
+                yield return null;
+            }
+
+            Assert.AreEqual("GameOver", GetPropertyValue(gameManager, "CurrentState").ToString());
+            Assert.AreEqual(0f, Time.timeScale);
+            Assert.IsFalse(((MonoBehaviour)player.GetComponent(FindType("LightNShadowSurvivor.PlayerController"))).enabled);
+            Assert.IsFalse(((MonoBehaviour)player.GetComponent(FindType("LightNShadowSurvivor.PlayerAim"))).enabled);
+        }
+
+        [Test]
+        public void StartRoundFromTerminalStateResetsStatsAndResumesTime()
+        {
+            Component gameManager = CreateGameManager();
+            Component stats = new GameObject("GameplayRegressionTest_Stats").AddComponent(FindType("LightNShadowSurvivor.GameStatsManager"));
+            Invoke(stats, "AddKill");
+            SetFieldValue(stats, "<TimeSurvived>k__BackingField", 12.5f, BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Invoke(gameManager, "TriggerGameOver");
+            Assert.AreEqual(0f, Time.timeScale);
+
+            Invoke(gameManager, "StartRound");
+
+            Assert.AreEqual("Round", GetPropertyValue(gameManager, "CurrentState").ToString());
+            Assert.AreEqual(1f, Time.timeScale);
+            Assert.AreEqual(0, GetIntProperty(stats, "Kills"));
+            Assert.AreEqual(0f, GetFloatProperty(stats, "TimeSurvived"));
+        }
+
+        [UnityTest]
+        public IEnumerator MonsterDeathHandlerCountsKillAndDropsXpOrb()
+        {
+            Component stats = new GameObject("GameplayRegressionTest_Stats").AddComponent(FindType("LightNShadowSurvivor.GameStatsManager"));
+            Component playerExperience = new GameObject("GameplayRegressionTest_PlayerExperience").AddComponent(FindType("LightNShadowSurvivor.PlayerExperience"));
+            SetFieldValue(playerExperience, "xpToNextLevel", 999f, BindingFlags.Instance | BindingFlags.NonPublic);
+            GameObject orbPrefab = new GameObject("GameplayRegressionTest_XPOrb");
+            orbPrefab.AddComponent(FindType("LightNShadowSurvivor.ExperienceOrb"));
+
+            GameObject monster = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            monster.name = "GameplayRegressionTest_Monster";
+            Component monsterBase = monster.AddComponent(FindType("LightNShadowSurvivor.MonsterBase"));
+            Component deathHandler = monster.AddComponent(FindType("LightNShadowSurvivor.MonsterDeathHandler"));
+            SetFieldValue(deathHandler, "xpOrbPrefab", orbPrefab, BindingFlags.Instance | BindingFlags.NonPublic);
+            SetFieldValue(deathHandler, "fadeDuration", 0.01f, BindingFlags.Instance | BindingFlags.NonPublic);
+            yield return null;
+
+            Invoke(monsterBase, "ModifyHealth", -200f);
+            yield return null;
+
+            Assert.AreEqual(1, GetIntProperty(stats, "Kills"));
+            Assert.NotNull(GameObject.Find("GameplayRegressionTest_XPOrb(Clone)"));
             Assert.AreEqual(0f, GetFloatProperty(playerExperience, "CurrentXP"));
+            Assert.IsFalse(monster.GetComponent<Collider>().enabled);
+        }
+
+        [Test]
+        public void PlayerExperienceLevelUpDoesNotRequireGameManager()
+        {
+            Component playerExperience = new GameObject("GameplayRegressionTest_PlayerExperience").AddComponent(FindType("LightNShadowSurvivor.PlayerExperience"));
+            SetFieldValue(playerExperience, "xpToNextLevel", 10f, BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Invoke(playerExperience, "AddXP", 15f);
+
+            Assert.AreEqual(2, GetIntProperty(playerExperience, "CurrentLevel"));
+            Assert.AreEqual(5f, GetFloatProperty(playerExperience, "CurrentXP"));
         }
 
         private static Component CreateGameManager()

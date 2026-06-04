@@ -14,7 +14,7 @@ namespace LightNShadowSurvivor.Tests
         {
             Time.timeScale = 1f;
 
-            foreach (GameObject obj in UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (GameObject obj in UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include))
             {
                 if (obj == null) continue;
                 if (obj.name.StartsWith("RoundFlowTest_", StringComparison.Ordinal) || obj.name == "Player_Main" || obj.name == "Result_UI")
@@ -75,6 +75,50 @@ namespace LightNShadowSurvivor.Tests
             Assert.AreEqual("Ending", GetGameState(gameManager));
             Assert.AreEqual(3, GetIntProperty(roundManager, "CurrentRound"));
             Assert.AreEqual(1f, Time.timeScale);
+        }
+
+        [UnityTest]
+        public IEnumerator NullUpgradeSelectionResumesRoundFlow()
+        {
+            Component gameManager = CreateGameManager();
+            Component roundManager = CreateRoundManager(round1: 0.03f, round2: 0.2f, round3: 0.2f);
+            Component upgradeManager = CreateUpgradeManager();
+            yield return null;
+
+            Invoke(gameManager, "StartRound");
+            yield return WaitForState(gameManager, "Upgrade", 1f);
+
+            Invoke(upgradeManager, "ApplyUpgrade", null);
+            yield return null;
+
+            Assert.AreEqual("Round", GetGameState(gameManager));
+            Assert.AreEqual(2, GetIntProperty(roundManager, "CurrentRound"));
+            Assert.AreEqual(1f, Time.timeScale);
+        }
+
+        [Test]
+        public void StageManagerCompletesStagesAndStopsAtTotal()
+        {
+            Component stageManager = new GameObject("RoundFlowTest_StageManager").AddComponent(FindType("LightNShadowSurvivor.StageManager"));
+            SetFieldValue(stageManager, "totalStages", 2, BindingFlags.Instance | BindingFlags.NonPublic);
+
+            int completedCount = 0;
+            int allClearedCount = 0;
+            EventInfo completedEvent = stageManager.GetType().GetEvent("OnStageCompleted", BindingFlags.Instance | BindingFlags.Public);
+            EventInfo allClearedEvent = stageManager.GetType().GetEvent("OnAllStagesCleared", BindingFlags.Instance | BindingFlags.Public);
+            Assert.NotNull(completedEvent);
+            Assert.NotNull(allClearedEvent);
+            completedEvent.AddEventHandler(stageManager, new Action<int>(_ => completedCount++));
+            allClearedEvent.AddEventHandler(stageManager, new Action(() => allClearedCount++));
+
+            Invoke(stageManager, "CompleteStage");
+            Invoke(stageManager, "CompleteStage");
+            Invoke(stageManager, "CompleteStage");
+
+            Assert.AreEqual(2, GetIntProperty(stageManager, "CurrentStage"));
+            Assert.IsTrue((bool)GetPropertyValue(stageManager, "AllStagesCleared"));
+            Assert.AreEqual(2, completedCount);
+            Assert.AreEqual(1, allClearedCount);
         }
 
         [UnityTest]
@@ -178,6 +222,13 @@ namespace LightNShadowSurvivor.Tests
             PropertyInfo property = component.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
             Assert.NotNull(property);
             return (int)property.GetValue(component);
+        }
+
+        private static object GetPropertyValue(Component component, string propertyName)
+        {
+            PropertyInfo property = component.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
+            Assert.NotNull(property);
+            return property.GetValue(component);
         }
 
         private static void Invoke(Component component, string methodName)

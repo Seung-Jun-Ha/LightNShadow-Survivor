@@ -12,7 +12,7 @@ namespace LightNShadowSurvivor.Tests
         {
             Time.timeScale = 1f;
 
-            foreach (GameObject obj in UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (GameObject obj in UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include))
             {
                 if (obj != null && obj.name.StartsWith("CharacterMoveTest_", StringComparison.Ordinal))
                 {
@@ -35,6 +35,20 @@ namespace LightNShadowSurvivor.Tests
             Assert.AreEqual(RigidbodyConstraints.FreezeRotation, rb.constraints);
             Assert.AreEqual(RigidbodyInterpolation.Interpolate, rb.interpolation);
             Assert.AreSame(controller, GetStaticPropertyValue(controller.GetType(), "Instance"));
+        }
+
+        [Test]
+        public void AwakeConfiguresCapsuleAboveGround()
+        {
+            GameObject player = CreatePlayer(Vector3.zero);
+            CapsuleCollider capsule = player.GetComponent<CapsuleCollider>();
+
+            Assert.NotNull(capsule);
+            Assert.IsFalse(capsule.isTrigger);
+            Assert.AreEqual(1, capsule.direction);
+            Assert.GreaterOrEqual(capsule.height, 1.8f);
+            Assert.GreaterOrEqual(capsule.radius, 0.35f);
+            Assert.GreaterOrEqual(capsule.center.y, capsule.height * 0.45f);
         }
 
         [Test]

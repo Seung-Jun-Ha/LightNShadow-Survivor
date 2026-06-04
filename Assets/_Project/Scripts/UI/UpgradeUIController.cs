@@ -19,7 +19,7 @@ namespace LightNShadowSurvivor
                 GameManager.Instance.OnStateChanged += HandleStateChanged;
             }
 
-            upgradePanel.SetActive(false);
+            if (upgradePanel != null) upgradePanel.SetActive(false);
         }
 
         private void OnDestroy()
@@ -36,33 +36,59 @@ namespace LightNShadowSurvivor
             }
             else
             {
-                upgradePanel.SetActive(false);
+                if (upgradePanel != null) upgradePanel.SetActive(false);
                 ClearCards();
             }
         }
 
         private void ShowUpgradeSelection()
         {
+            if (upgradePanel == null)
+            {
+                Debug.LogWarning("[UpgradeUIController] Upgrade panel is not assigned.");
+                return;
+            }
+
+            if (cardContainer == null || cardPrefab == null)
+            {
+                Debug.LogWarning("[UpgradeUIController] Card container or card prefab is not assigned.");
+                upgradePanel.SetActive(false);
+                return;
+            }
+
             upgradePanel.SetActive(true);
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
 
             ClearCards();
 
-            if (UpgradeManager.Instance != null)
+            if (UpgradeManager.Instance == null)
             {
-                var upgrades = UpgradeManager.Instance.GetRandomUpgrades();
-                foreach (var data in upgrades)
-                {
-                    GameObject cardObj = Instantiate(cardPrefab, cardContainer);
-                    spawnedCards.Add(cardObj);
+                Debug.LogWarning("[UpgradeUIController] UpgradeManager instance was not found.");
+                upgradePanel.SetActive(false);
+                return;
+            }
 
-                    if (cardObj.TryGetComponent<UpgradeCardUI>(out var cardUI))
-                    {
-                        cardUI.Setup(data, (selectedData) => {
-                            UpgradeManager.Instance.ApplyUpgrade(selectedData);
-                        });
-                    }
+            var upgrades = UpgradeManager.Instance.GetRandomUpgrades();
+            if (upgrades.Count == 0)
+            {
+                Debug.LogWarning("[UpgradeUIController] No upgrades available. Resuming round.");
+                UpgradeManager.Instance.ResumeAfterUpgradeSelection();
+                return;
+            }
+
+            foreach (var data in upgrades)
+            {
+                GameObject cardObj = Instantiate(cardPrefab, cardContainer);
+                spawnedCards.Add(cardObj);
+
+                if (cardObj.TryGetComponent<UpgradeCardUI>(out var cardUI))
+                {
+                    cardUI.Setup(data, selectedData => UpgradeManager.Instance.ApplyUpgrade(selectedData));
+                }
+                else
+                {
+                    Debug.LogWarning($"[UpgradeUIController] Upgrade card prefab {cardPrefab.name} has no UpgradeCardUI component.");
                 }
             }
         }

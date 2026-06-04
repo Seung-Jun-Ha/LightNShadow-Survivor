@@ -11,5 +11,6 @@ AssetOrigin:
   productId: 205742
   packageName: Free Low Poly Nature Forest
   packageVersion: 3.0
-  assetPath: Assets/Pure Poly/Free Low Poly Nature Pack/Terrain/Terrain Layers/Pebbles_Light_Brown_Ground.terrainlayer
+  assetPath: Assets/ThirdParty/Pure Poly/Free Low Poly Nature Pack/Terrain/Terrain
+    Layers/Pebbles_Light_Brown_Ground.terrainlayer
   uploadId: 802378
