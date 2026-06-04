@@ -13,6 +13,9 @@ namespace LightNShadowSurvivor
         private const float BossHealth = 30f;
         private const float Round1Experience = 3f;
         private const float Round2Experience = 5f;
+        private const float Round1MoveSpeed = 3.5f;
+        private const float Round2MoveSpeed = 4f;
+        private const float BossMoveSpeed = 4.5f;
 
         [Header("Spawn Settings")]
         [SerializeField] private List<GameObject> round1Monsters;
@@ -137,6 +140,8 @@ namespace LightNShadowSurvivor
             if (bossBase == null) return;
 
             bossBase.ConfigureBoss(BossHealth);
+            GhostAI bossAI = boss.GetComponentInChildren<GhostAI>();
+            if (bossAI != null) bossAI.ConfigureMoveSpeed(BossMoveSpeed);
             var deathHandler = boss.GetComponentInChildren<MonsterDeathHandler>();
             if (deathHandler != null) deathHandler.ConfigureExperienceReward(0f);
             Debug.Log($"[MonsterSpawner] Boss HP configured to {BossHealth:F0}.");
@@ -211,10 +216,12 @@ namespace LightNShadowSurvivor
             float experience = currentRound == 1 ? Round1Experience : Round2Experience;
             monsterBase.ConfigureForRound(health, experience);
 
-            if (monster.GetComponentInChildren<GhostAI>() == null)
+            GhostAI ghostAI = monster.GetComponentInChildren<GhostAI>();
+            if (ghostAI == null)
             {
-                monster.AddComponent<GhostAI>();
+                ghostAI = monster.AddComponent<GhostAI>();
             }
+            ghostAI.ConfigureMoveSpeed(currentRound == 1 ? Round1MoveSpeed : Round2MoveSpeed);
 
             if (monster.GetComponentInChildren<LightDamageReceiver>() == null)
             {

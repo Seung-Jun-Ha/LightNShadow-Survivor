@@ -162,9 +162,20 @@ namespace LightNShadowSurvivor
             }
         }
 
-                public void ApplySlow()
+        public void ApplySlow()
         {
             ApplySlow(0.5f, 0.2f);
+        }
+
+        public void ConfigureMoveSpeed(float unitsPerSecond)
+        {
+            moveSpeed = Mathf.Max(0f, unitsPerSecond);
+            originalSpeed = moveSpeed;
+
+            if (agent != null)
+            {
+                agent.speed = moveSpeed;
+            }
         }
 
         public void ApplySlow(float speedMultiplier, float duration)

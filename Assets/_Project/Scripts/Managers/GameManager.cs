@@ -87,8 +87,8 @@ namespace LightNShadowSurvivor
                     }
 
                     Time.timeScale = 1f;
-                    Cursor.visible = false;
-                    Cursor.lockState = CursorLockMode.Locked;
+                    Cursor.visible = true;
+                    Cursor.lockState = CursorLockMode.None;
                     break;
                 case GameState.Upgrade:
                     Time.timeScale = 0f;

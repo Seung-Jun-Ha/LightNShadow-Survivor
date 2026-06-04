@@ -7,8 +7,10 @@ namespace LightNShadowSurvivor
     [RequireComponent(typeof(CapsuleCollider))]
     public class PlayerController : MonoBehaviour
     {
+        private const float InitialMoveSpeed = 4f;
+
         [Header("Movement Settings")]
-        [SerializeField] private float moveSpeed = 6f;
+        [SerializeField] private float moveSpeed = InitialMoveSpeed;
         [SerializeField] private float turnSpeed = 100f; // Adjusted for degrees per second
 
         [Header("Collision Settings")]
@@ -33,6 +35,7 @@ namespace LightNShadowSurvivor
         private void Awake()
         {
             Instance = this;
+            moveSpeed = InitialMoveSpeed;
             rb = GetComponent<Rigidbody>();
             if (rb == null) rb = gameObject.AddComponent<Rigidbody>();
 

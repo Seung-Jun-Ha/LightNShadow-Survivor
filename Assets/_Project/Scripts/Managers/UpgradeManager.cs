@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace LightNShadowSurvivor
 {
@@ -25,8 +24,23 @@ namespace LightNShadowSurvivor
                 return new List<UpgradeData>();
             }
 
-            // Shuffle and pick 3
-            return allUpgrades.OrderBy(x => Random.value).Take(cardsToDisplay).ToList();
+            List<UpgradeData> pool = new List<UpgradeData>(allUpgrades.Count);
+            foreach (var upgrade in allUpgrades)
+            {
+                if (upgrade != null) pool.Add(upgrade);
+            }
+
+            int count = Mathf.Min(cardsToDisplay, pool.Count);
+            List<UpgradeData> selected = new List<UpgradeData>(count);
+
+            for (int i = 0; i < count; i++)
+            {
+                int index = Random.Range(0, pool.Count);
+                selected.Add(pool[index]);
+                pool.RemoveAt(index);
+            }
+
+            return selected;
         }
 
         public void ApplyUpgrade(UpgradeData data)

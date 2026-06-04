@@ -203,8 +203,8 @@ namespace LightNShadowSurvivor
             isTimerRunning = true;
             Time.timeScale = 1f;
             
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
 
             if (GameManager.Instance != null)
             {

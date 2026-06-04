@@ -21,6 +21,7 @@ namespace LightNShadowSurvivor
         [Header("Aiming Config")]
         [SerializeField] private float aimDistance = 20f;
         [SerializeField] private float verticalLimit = 2.0f;
+        [SerializeField] private LayerMask aimSurfaceMask = 0;
 
         private Vector3 currentTargetPoint;
         private Quaternion currentHandRot;
@@ -59,7 +60,6 @@ namespace LightNShadowSurvivor
         private void LateUpdate()
         {
             UpdateTargetPoint();
-            AimFlashlight();
 
             // Aim the arm bones
             if (rightForearmBone != null)
@@ -73,6 +73,8 @@ namespace LightNShadowSurvivor
                 currentHandRot = AimBoneSmoothly(rightHandBone, currentHandRot, handRotationOffset);
                 rightHandBone.rotation = currentHandRot;
             }
+
+            AimFlashlight();
         }
 
         private void UpdateTargetPoint()
@@ -83,6 +85,12 @@ namespace LightNShadowSurvivor
 
             Vector2 mousePos = Mouse.current.position.ReadValue();
             Ray ray = mainCamera.ScreenPointToRay(mousePos);
+
+            if (aimSurfaceMask.value != 0 && Physics.Raycast(ray, out RaycastHit hit, aimDistance * 2f, aimSurfaceMask, QueryTriggerInteraction.Ignore))
+            {
+                currentTargetPoint = ClampVerticalTarget(hit.point);
+                return;
+            }
 
             Plane aimPlane = new Plane(Vector3.up, transform.position + Vector3.up * 0.8f);
             if (aimPlane.Raycast(ray, out float enter))

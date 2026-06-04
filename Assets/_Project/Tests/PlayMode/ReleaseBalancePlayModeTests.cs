@@ -32,6 +32,7 @@ namespace LightNShadowSurvivor.Tests
             Component attack = player.AddComponent(FindType("LightNShadowSurvivor.FlashLightAttack"));
 
             Assert.AreEqual(1f, GetField<float>(attack, "damagePerSecond"), 0.0001f);
+            Assert.AreEqual(4f, (float)controller.GetType().GetProperty("MoveSpeed").GetValue(controller), 0.0001f);
 
             Invoke(attack, "IncreaseDamage", 0.5f);
             Assert.AreEqual(1.5f, GetField<float>(attack, "damagePerSecond"), 0.0001f);
@@ -88,6 +89,7 @@ namespace LightNShadowSurvivor.Tests
             Assert.AreEqual(1f, Invoke<float>(spawner, "GetCurrentSpawnInterval"), 0.0001f);
             Assert.AreEqual(2f, (float)round1Base.GetType().GetProperty("MaxHealth").GetValue(round1Base), 0.0001f);
             Assert.AreEqual(3f, GetField<float>(round1Monster.GetComponent(FindType("LightNShadowSurvivor.MonsterDeathHandler")), "xpValue"), 0.0001f);
+            Assert.AreEqual(3.5f, GetField<float>(round1Monster.GetComponent(FindType("LightNShadowSurvivor.GhostAI")), "moveSpeed"), 0.0001f);
 
             GameObject round2Monster = new GameObject("ReleaseBalanceTest_Round2");
             Invoke(spawner, "SetRound", 2);
@@ -97,6 +99,7 @@ namespace LightNShadowSurvivor.Tests
             Assert.AreEqual(2f, Invoke<float>(spawner, "GetCurrentSpawnInterval"), 0.0001f);
             Assert.AreEqual(4f, (float)round2Base.GetType().GetProperty("MaxHealth").GetValue(round2Base), 0.0001f);
             Assert.AreEqual(5f, GetField<float>(round2Monster.GetComponent(FindType("LightNShadowSurvivor.MonsterDeathHandler")), "xpValue"), 0.0001f);
+            Assert.AreEqual(4f, GetField<float>(round2Monster.GetComponent(FindType("LightNShadowSurvivor.GhostAI")), "moveSpeed"), 0.0001f);
         }
 
         [Test]
@@ -105,6 +108,7 @@ namespace LightNShadowSurvivor.Tests
             Component spawner = new GameObject("ReleaseBalanceTest_Spawner")
                 .AddComponent(FindType("LightNShadowSurvivor.MonsterSpawner"));
             GameObject bossObject = new GameObject("ReleaseBalanceTest_Boss");
+            Component bossAI = bossObject.AddComponent(FindType("LightNShadowSurvivor.GhostAI"));
             Component boss = bossObject.AddComponent(FindType("LightNShadowSurvivor.BossBase"));
 
             Invoke(spawner, "ConfigureBoss", bossObject);
@@ -112,6 +116,8 @@ namespace LightNShadowSurvivor.Tests
             Assert.AreEqual(30f, (float)boss.GetType().GetProperty("MaxHealth").GetValue(boss), 0.0001f);
             Assert.AreEqual(0f, (float)boss.GetType().GetProperty("CurrentShield").GetValue(boss), 0.0001f);
             Assert.IsFalse(GetField<bool>(boss, "enableBehavior"));
+            Assert.AreEqual(4.5f, GetField<float>(bossAI, "moveSpeed"), 0.0001f);
+            Assert.IsTrue(((MonoBehaviour)bossAI).enabled);
         }
 
         private static void AssertExperienceState(Component experience, int level, float requirement)

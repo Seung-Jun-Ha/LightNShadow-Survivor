@@ -11,6 +11,7 @@ namespace LightNShadowSurvivor
         [SerializeField] private GameObject cardPrefab;
 
         private List<GameObject> spawnedCards = new List<GameObject>();
+        private bool isShowing;
 
         private void Start()
         {
@@ -36,6 +37,7 @@ namespace LightNShadowSurvivor
             }
             else
             {
+                isShowing = false;
                 if (upgradePanel != null) upgradePanel.SetActive(false);
                 ClearCards();
             }
@@ -43,6 +45,8 @@ namespace LightNShadowSurvivor
 
         private void ShowUpgradeSelection()
         {
+            if (isShowing) return;
+
             if (upgradePanel == null)
             {
                 Debug.LogWarning("[UpgradeUIController] Upgrade panel is not assigned.");
@@ -57,6 +61,7 @@ namespace LightNShadowSurvivor
             }
 
             upgradePanel.SetActive(true);
+            isShowing = true;
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
 
@@ -73,6 +78,7 @@ namespace LightNShadowSurvivor
             if (upgrades.Count == 0)
             {
                 Debug.LogWarning("[UpgradeUIController] No upgrades available. Resuming round.");
+                isShowing = false;
                 UpgradeManager.Instance.ResumeAfterUpgradeSelection();
                 return;
             }
@@ -95,8 +101,9 @@ namespace LightNShadowSurvivor
 
         private void ClearCards()
         {
-            foreach (var card in spawnedCards)
+            for (int i = spawnedCards.Count - 1; i >= 0; i--)
             {
+                var card = spawnedCards[i];
                 if (card != null) Destroy(card);
             }
             spawnedCards.Clear();

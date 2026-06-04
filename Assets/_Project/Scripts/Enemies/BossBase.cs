@@ -37,10 +37,6 @@ namespace LightNShadowSurvivor
             dashTimer = dashCooldown;
             spawnTimer = minionSpawnInterval;
 
-            if (!enableBehavior)
-            {
-                StopBehavior();
-            }
         }
 
         public void ConfigureBoss(float health)

@@ -14,11 +14,13 @@ namespace LightNShadowSurvivor
 
         private UpgradeData currentData;
         private Action<UpgradeData> onSelected;
+        private bool hasSelected;
 
         public void Setup(UpgradeData data, Action<UpgradeData> callback)
         {
             currentData = data;
             onSelected = callback;
+            hasSelected = false;
 
             if (data == null)
             {
@@ -41,8 +43,22 @@ namespace LightNShadowSurvivor
             {
                 selectButton.interactable = true;
                 selectButton.onClick.RemoveAllListeners();
-                selectButton.onClick.AddListener(() => onSelected?.Invoke(currentData));
+                selectButton.onClick.AddListener(Select);
             }
+        }
+
+        private void Select()
+        {
+            if (hasSelected || currentData == null) return;
+
+            hasSelected = true;
+            if (selectButton != null) selectButton.interactable = false;
+            onSelected?.Invoke(currentData);
+        }
+
+        private void OnDisable()
+        {
+            if (selectButton != null) selectButton.onClick.RemoveListener(Select);
         }
     }
 }
