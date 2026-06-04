@@ -1,6 +1,7 @@
 ﻿# Light & Shadow Survivor
 
 이 저장소는 Unity 기반의 `Light & Shadow Survivor` 프로젝트를 정리한 작업 공간입니다. 핵심 문서는 아래 5개로 나눠서 유지보수하기 쉽게 관리합니다.
+파일 이름은 'LightNShadow'로 통일합니다.
 
 ## 문서 안내
 
