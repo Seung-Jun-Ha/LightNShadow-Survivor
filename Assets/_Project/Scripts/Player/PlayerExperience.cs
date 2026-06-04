@@ -69,6 +69,11 @@ namespace LightNShadowSurvivor
             Debug.Log($"Level Up! Current Level: {currentLevel}");
             OnLevelUp?.Invoke(currentLevel);
 
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayLevelUpSFX();
+            }
+
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.OpenUpgrade();

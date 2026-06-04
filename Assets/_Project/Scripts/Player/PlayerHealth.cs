@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 
 namespace LightNShadowSurvivor
@@ -38,6 +38,11 @@ namespace LightNShadowSurvivor
             
             OnHealthChanged?.Invoke(currentHealth);
 
+            if (AudioManager.Instance != null && currentHealth > 0)
+            {
+                AudioManager.Instance.PlayPlayerHitSFX();
+            }
+
             if (currentHealth <= 0)
             {
                 Die();
@@ -59,6 +64,12 @@ namespace LightNShadowSurvivor
 
             isDead = true;
             Debug.Log("Player Died!");
+
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayPlayerDeathSFX();
+            }
+
             OnPlayerDeath?.Invoke();
 
             if (GetComponent<PlayerDeathHandler>() == null && GameManager.Instance != null)

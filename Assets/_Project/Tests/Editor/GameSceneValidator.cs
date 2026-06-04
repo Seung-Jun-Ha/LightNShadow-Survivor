@@ -23,6 +23,16 @@ namespace LightNShadowSurvivor.Tests
             ExitWithResults("Enemy prefab references", errors);
         }
 
+        public static void ValidateAudioBatch()
+        {
+            EditorSceneManager.OpenScene(GameScenePath, OpenSceneMode.Single);
+
+            var errors = new List<string>();
+            RequireSingleComponent<AudioManager>(errors);
+            ValidateAudio(errors);
+            ExitWithResults("GameScene audio references", errors);
+        }
+
         private static void ExitWithResults(string label, List<string> errors)
         {
             foreach (string error in errors)
@@ -163,6 +173,25 @@ namespace LightNShadowSurvivor.Tests
             }
 
             RequireObjectReference(new SerializedObject(endingManager), "directionalLight", errors);
+        }
+
+        private static void ValidateAudio(List<string> errors)
+        {
+            AudioManager audioManager = Object.FindAnyObjectByType<AudioManager>(FindObjectsInactive.Include);
+            if (audioManager == null)
+            {
+                return;
+            }
+
+            var serialized = new SerializedObject(audioManager);
+            foreach (string propertyName in new[]
+                     {
+                         "bgmSource", "round1Music", "round2Music", "round3Music", "endingMusic",
+                         "sfxSource", "monsterDeathR1SFX", "monsterDeathR2SFX"
+                     })
+            {
+                RequireObjectReference(serialized, propertyName, errors);
+            }
         }
 
         private static void RequireObjectReference(SerializedObject serialized, string propertyName, List<string> errors)

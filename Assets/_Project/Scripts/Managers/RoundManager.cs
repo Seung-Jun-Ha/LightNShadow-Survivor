@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 
 namespace LightNShadowSurvivor
@@ -115,6 +115,11 @@ namespace LightNShadowSurvivor
 
             isTimerRunning = false;
             OnRoundEnded?.Invoke(currentRound);
+
+            if (AudioManager.Instance != null && currentRound < 3)
+            {
+                AudioManager.Instance.PlayRoundClearSFX();
+            }
 
             var spawner = FindAnyObjectByType<MonsterSpawner>();
             if (spawner != null) spawner.StopAndClearMonsters();

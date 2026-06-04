@@ -83,6 +83,11 @@ namespace LightNShadowSurvivor
                 Instantiate(deathParticlePrefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
             }
 
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayMonsterDeathSFX();
+            }
+
             GrantExperienceReward();
 
             // Drop Random Item

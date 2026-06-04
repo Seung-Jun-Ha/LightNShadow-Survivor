@@ -14,6 +14,16 @@ namespace LightNShadowSurvivor
         [SerializeField] private AudioClip round3Music;
         [SerializeField] private AudioClip endingMusic;
 
+        [Header("SFX Settings")]
+        [SerializeField] private AudioSource sfxSource;
+        [SerializeField] private AudioClip buttonClickSFX;      // 03
+        [SerializeField] private AudioClip monsterDeathR1SFX;   // 05
+        [SerializeField] private AudioClip monsterDeathR2SFX;   // 39
+        [SerializeField] private AudioClip levelUpSFX;          // 12
+        [SerializeField] private AudioClip roundClearSFX;       // 18
+        [SerializeField] private AudioClip playerHitSFX;        // 47
+        [SerializeField] private AudioClip playerDeathSFX;      // 49
+
         private void Awake()
         {
             if (Instance == null) Instance = this;
@@ -21,6 +31,12 @@ namespace LightNShadowSurvivor
             
             if (bgmSource == null) bgmSource = gameObject.AddComponent<AudioSource>();
             bgmSource.loop = true;
+
+            if (sfxSource == null)
+            {
+                sfxSource = gameObject.AddComponent<AudioSource>();
+                sfxSource.playOnAwake = false;
+            }
         }
 
         private void Start()
@@ -69,11 +85,28 @@ namespace LightNShadowSurvivor
             }
         }
 
-        private void PlayBGM(AudioClip clip)
+        public void PlayBGM(AudioClip clip)
         {
             if (clip == null) return;
             bgmSource.clip = clip;
             bgmSource.Play();
         }
+
+        public void PlaySFX(AudioClip clip)
+        {
+            if (clip == null || sfxSource == null) return;
+            sfxSource.PlayOneShot(clip);
+        }
+
+        public void PlayButtonClickSFX() => PlaySFX(buttonClickSFX);
+        public void PlayMonsterDeathSFX()
+        {
+            int round = RoundManager.Instance != null ? RoundManager.Instance.CurrentRound : 1;
+            PlaySFX(round == 1 ? monsterDeathR1SFX : monsterDeathR2SFX);
+        }
+        public void PlayLevelUpSFX() => PlaySFX(levelUpSFX);
+        public void PlayRoundClearSFX() => PlaySFX(roundClearSFX);
+        public void PlayPlayerHitSFX() => PlaySFX(playerHitSFX);
+        public void PlayPlayerDeathSFX() => PlaySFX(playerDeathSFX);
     }
 }
