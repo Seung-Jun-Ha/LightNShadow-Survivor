@@ -67,6 +67,6 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "LightNShadow-Survivor.slnx",
+    "dotnet.defaultSolution": "LightNShadow.slnx",
     "dotnet.enableWorkspaceBasedDevelopment": false
 }
