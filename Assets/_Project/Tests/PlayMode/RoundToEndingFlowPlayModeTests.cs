@@ -53,7 +53,7 @@ namespace LightNShadowSurvivor.Tests
         }
 
         [UnityTest]
-        public IEnumerator ThreeRoundFlowTriggersEndingAfterRoundThree()
+        public IEnumerator RoundThreeWaitsForBossDefeatBeforeEnding()
         {
             Component gameManager = CreateGameManager();
             Component roundManager = CreateRoundManager(round1: 0.03f, round2: 0.03f, round3: 0.03f);
@@ -70,6 +70,13 @@ namespace LightNShadowSurvivor.Tests
             Assert.AreEqual(2, GetIntProperty(roundManager, "CurrentRound"));
             Invoke(upgradeManager, "ApplyUpgrade", CreateUpgradeData());
 
+            yield return new WaitForSeconds(0.1f);
+            Assert.AreEqual("Round", GetGameState(gameManager));
+            Assert.AreEqual(3, GetIntProperty(roundManager, "CurrentRound"));
+
+            Component boss = new GameObject("RoundFlowTest_Boss").AddComponent(FindType("LightNShadowSurvivor.BossBase"));
+            Invoke(boss, "ConfigureBoss", 30f);
+            Invoke(boss, "ModifyHealth", -30f);
             yield return WaitForState(gameManager, "Ending", 1f);
 
             Assert.AreEqual("Ending", GetGameState(gameManager));

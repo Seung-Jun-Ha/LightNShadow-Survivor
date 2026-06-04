@@ -107,7 +107,7 @@ namespace LightNShadowSurvivor
                 case GhostReactionType.Shield:
                     return new LightReaction(1f, 0.45f, 0.25f, new Color(0.25f, 0.65f, 1f, 1f));
                 case GhostReactionType.Boss:
-                    return new LightReaction(0.8f, 0.6f, 0.2f, new Color(1f, 0.2f, 0.8f, 1f));
+                    return new LightReaction(1f, 0.6f, 0.2f, new Color(1f, 0.2f, 0.8f, 1f));
                 default:
                     return new LightReaction(1f, 0.5f, 0.2f, new Color(1f, 0.2f, 0.2f, 1f));
             }

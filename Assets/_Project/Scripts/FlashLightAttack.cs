@@ -16,7 +16,7 @@ namespace LightNShadowSurvivor
         [SerializeField] private LayerMask obstacleLayer;
         [SerializeField] private int maxTargets = 64;
 
-        public float damagePerSecond = 10f;
+        public float damagePerSecond = 1f;
         public float range = 6f;
         public float angle = 30f;
         public LayerMask targetLayer;
@@ -101,6 +101,16 @@ namespace LightNShadowSurvivor
                     receiver.TakeLightDamage(damagePerSecond * Time.deltaTime);
                 }
             }
+        }
+
+        public void IncreaseDamage(float amount)
+        {
+            damagePerSecond = Mathf.Max(0f, damagePerSecond + amount);
+        }
+
+        public void IncreaseDiameterPercent(float percent)
+        {
+            range *= 1f + Mathf.Max(0f, percent);
         }
     }
 }

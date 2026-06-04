@@ -34,6 +34,13 @@ namespace LightNShadowSurvivor
 
         private void Start()
         {
+            if (RoundManager.Instance != null)
+            {
+                isTimerRunning = false;
+                enabled = false;
+                return;
+            }
+
             currentTimer = stageTime;
             if (upgradePanel != null) upgradePanel.SetActive(false);
             
@@ -157,29 +164,22 @@ namespace LightNShadowSurvivor
             {
                 case UpgradeType.MoveSpeed:
                     var controller = player.GetComponent<PlayerController>();
-                    if (controller != null) controller.MoveSpeed += data.increaseValue;
+                    if (controller != null) controller.IncreaseMoveSpeedPercent(data.increaseValue);
                     break;
 
                 case UpgradeType.Durability:
                     var health = player.GetComponent<PlayerHealth>();
-                    if (health != null) health.IncreaseMaxHealth(data.increaseValue);
+                    if (health != null) health.IncreaseDurability(data.increaseValue);
                     break;
 
                 case UpgradeType.LightIntensity:
-                    Light light = player.GetComponentInChildren<Light>();
-                    if (light != null) light.intensity += data.increaseValue;
+                    var lightAttack = player.GetComponentInChildren<FlashLightAttack>();
+                    if (lightAttack != null) lightAttack.IncreaseDamage(data.increaseValue);
                     break;
 
                 case UpgradeType.LightRadius:
-                    Light spotLight = player.GetComponentInChildren<Light>();
-                    if (spotLight != null) spotLight.range += data.increaseValue;
-
                     var attack = player.GetComponentInChildren<FlashLightAttack>();
-                    if (attack != null)
-                    {
-                        attack.range += data.increaseValue;
-                        attack.angle += 5f;
-                    }
+                    if (attack != null) attack.IncreaseDiameterPercent(data.increaseValue);
                     break;
             }
         }

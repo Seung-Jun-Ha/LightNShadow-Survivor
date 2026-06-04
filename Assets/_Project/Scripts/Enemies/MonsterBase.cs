@@ -87,7 +87,7 @@ namespace LightNShadowSurvivor
         {
             if (isDead) return;
             isDead = true;
-            if (grantExperienceDirectly && !TryGetComponent<MonsterDeathHandler>(out _))
+            if (grantExperienceDirectly && GetComponentInChildren<MonsterDeathHandler>() == null)
             {
                 GrantExperience();
             }
