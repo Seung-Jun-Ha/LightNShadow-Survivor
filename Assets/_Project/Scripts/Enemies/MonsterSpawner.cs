@@ -211,7 +211,18 @@ namespace LightNShadowSurvivor
             float experience = currentRound == 1 ? Round1Experience : Round2Experience;
             monsterBase.ConfigureForRound(health, experience);
 
+            if (monster.GetComponentInChildren<GhostAI>() == null)
+            {
+                monster.AddComponent<GhostAI>();
+            }
+
+            if (monster.GetComponentInChildren<LightDamageReceiver>() == null)
+            {
+                monster.AddComponent<LightDamageReceiver>();
+            }
+
             MonsterDeathHandler deathHandler = monster.GetComponentInChildren<MonsterDeathHandler>();
+            if (deathHandler == null) deathHandler = monster.AddComponent<MonsterDeathHandler>();
             if (deathHandler != null) deathHandler.ConfigureExperienceReward(experience);
         }
 

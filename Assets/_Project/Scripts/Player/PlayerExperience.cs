@@ -27,6 +27,8 @@ namespace LightNShadowSurvivor
             if (Instance == null) Instance = this;
             else Destroy(gameObject);
 
+            maxLevel = 5;
+            xpRequirements = new[] { 10f, 15f, 20f, 25f, 30f };
             currentLevel = Mathf.Clamp(currentLevel, 1, maxLevel);
             xpToNextLevel = GetXPRequirement(currentLevel);
         }
