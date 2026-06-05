@@ -58,3 +58,29 @@ Unity 표준 `-runTests`가 현재 환경에서 초기 컴파일 타이밍 때�
 ```powershell
 & 'C:\Program Files\Unity\Hub\Editor\6000.4.7f1\Editor\Unity.exe' -batchmode -projectPath 'C:\Users\tjdgns\UnityProj\LNS_seungJun\LightNShadow-Survivor' -executeMethod LightNShadowSurvivor.Tests.BatchPlayModeTestRunner.RunFlashlightTests -testResults 'C:\Users\tjdgns\UnityProj\LNS_seungJun\LightNShadow-Survivor\Temp\collision-playmode-test-results.xml' -logFile 'C:\Users\tjdgns\UnityProj\LNS_seungJun\LightNShadow-Survivor\Temp\collision-playmode-test.log'
 ```
+## 2026-06-06 P0 Validation Backlog Update
+
+The 2026-06-06 validation pass supersedes the older "scene and prefab references passed" note until the following items are repaired and re-run.
+
+- [ ] Repair `GameScene` UI wiring.
+  - Evidence: `GameSceneValidator.ValidateBatch` reported `Expected exactly one UIManager, found 0`.
+  - Completion: loading `Assets/_Project/Scenes/GameScene.unity` through the intended runtime setup exposes exactly one valid `UIManager`, or the validator is updated to load `UIScene` additively before checking UI references.
+- [ ] Repair `MonsterSpawner.round2Monsters` and `MonsterSpawner.round3Monsters`.
+  - Evidence: both serialized lists contain missing references.
+  - Completion: no missing/null prefab entries remain and round 2/3 spawns can instantiate valid monsters.
+- [ ] Repair special enemy prefabs.
+  - Evidence: `Ghost_Shielded.prefab` and `Ghost_Teleport.prefab` are missing `GhostAI`, `MonsterDeathHandler`, and `NavMeshAgent`.
+  - Completion: each prefab has `MonsterBase`, `GhostAI`, `MonsterDeathHandler`, `Collider`, `NavMeshAgent`, and a valid XP orb policy/reference.
+- [ ] Assign and verify `AudioManager` references.
+  - Evidence: `bgmSource`, `sfxSource`, round BGM clips, ending BGM, `monsterDeathR1SFX`, and `monsterDeathR2SFX` are unassigned.
+  - Completion: BGM changes on round/ending states and SFX plays for button click, monster death, level up, round clear, player hit, and player death.
+- [ ] Run real scene smoke test after the reference repairs.
+  - Completion: Start -> Round 1 -> Upgrade -> Round 2 -> Round 3/boss -> Ending and player death -> GameOver can be reproduced without missing-reference errors.
+
+2026-06-06 verification results:
+
+- `dotnet build LightNShadow.slnx`: passed, 0 errors, 1 third-party obsolete API warning.
+- Unity PlayMode TestRunner: passed, 32/32.
+- `GameSceneValidator.ValidateBatch`: failed on UIManager and round monster references.
+- `GameSceneValidator.ValidateEnemyPrefabsBatch`: failed on Shield/Teleport prefab components.
+- `GameSceneValidator.ValidateAudioBatch`: failed on AudioManager source/clip assignments.

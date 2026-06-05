@@ -138,3 +138,34 @@
 ## 판정
 
 현재 상태는 “핵심 로직 MVP 구현 후 안정화 단계”입니다. 2026-06-04 기준으로 주요 상태 전환, 사망, XP 보상, GameScene/대표 몬스터 프리팹 참조 리스크를 자동 검증했고 프로젝트 소유 코드의 릴리즈 경고 두 항목을 해결했습니다. P0 자동 검증 항목은 4개 중 3개가 완료되었고 전체 구현율은 약 70%입니다. 다만 릴리즈 품질로 보기에는 수동 전체 루프, 보스/특수 몬스터, UI/연출, 밸런스, 설정/플랫폼 검증이 여전히 부족합니다.
+## 2026-06-06 Validation Addendum
+
+Latest local validation changed the release-risk picture. Core code still compiles and automated PlayMode coverage is healthy, but scene and prefab wiring have current blockers.
+
+- `dotnet build LightNShadow.slnx`: passed, 0 errors, 1 warning from third-party `Assets/ThirdParty/Gentleland/SteampunkUI/Scripts/BarsFillAnimations.cs`.
+- Unity PlayMode TestRunner: passed, 32/32 tests.
+- `GameSceneValidator.ValidateBatch`: failed.
+  - `UIManager` was not found when loading `Assets/_Project/Scenes/GameScene.unity` alone.
+  - `MonsterSpawner.round2Monsters` contains a missing reference.
+  - `MonsterSpawner.round3Monsters` contains a missing reference.
+- `GameSceneValidator.ValidateEnemyPrefabsBatch`: failed.
+  - `Assets/_Project/Prefabs/Enemies/Ghost_Shielded.prefab` is missing `GhostAI`, `MonsterDeathHandler`, and `NavMeshAgent`.
+  - `Assets/_Project/Prefabs/Enemies/Ghost_Teleport.prefab` is missing `GhostAI`, `MonsterDeathHandler`, and `NavMeshAgent`.
+- `GameSceneValidator.ValidateAudioBatch`: failed.
+  - `AudioManager.bgmSource`, `sfxSource`, `round1Music`, `round2Music`, `round3Music`, `endingMusic`, `monsterDeathR1SFX`, and `monsterDeathR2SFX` are not assigned.
+  - Code hooks exist for button click, monster death, level up, round clear, player hit, and player death SFX, but scene clip assignment is incomplete.
+
+Revised assessment:
+
+- Core gameplay logic: about 80%.
+- Playable MVP: about 72-74%, pending scene reference repair.
+- Release-candidate readiness: about 62-66%, because validation blockers can break real scene play even though PlayMode tests pass.
+- Audio/SFX readiness: about 30-40%; manager and call sites exist, but actual scene assignments and listening tests are incomplete.
+
+Current P0 blockers:
+
+1. Repair `GameScene` manager/UI wiring so `UIManager` is present or validation loads the required additive UI scene intentionally.
+2. Remove or replace missing references in `MonsterSpawner.round2Monsters` and `MonsterSpawner.round3Monsters`.
+3. Repair `Ghost_Shielded` and `Ghost_Teleport` prefab component setup.
+4. Assign `AudioManager` BGM/SFX sources and clips, then run an audio smoke test.
+5. Run the real scene smoke test from Start -> round -> upgrade -> next round -> game over/ending.

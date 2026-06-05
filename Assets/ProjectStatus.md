@@ -138,3 +138,21 @@
 - PlayMode 테스트 최종 결과: 8/8 통과
 - 결과 파일: `Temp/implementation-status-playmode-test-results.xml`
 - 유령 몬스터는 Player와 물리 충돌하지 않는 설계로 테스트 기준 반영 완료
+## 2026-06-06 Validation Update
+
+Current status: MVP gameplay logic is still mostly implemented, but release readiness is blocked by scene/prefab/audio wiring issues found in Unity batch validation.
+
+- Build: `dotnet build LightNShadow.slnx` passed with 0 errors and 1 third-party warning.
+- Automated gameplay tests: Unity PlayMode TestRunner passed 32/32.
+- Scene validation: failed because `UIManager` is missing from the single-loaded `GameScene`, and `MonsterSpawner.round2Monsters` / `round3Monsters` contain missing references.
+- Enemy prefab validation: failed because `Ghost_Shielded.prefab` and `Ghost_Teleport.prefab` are missing `GhostAI`, `MonsterDeathHandler`, and `NavMeshAgent`.
+- Audio validation: failed because `AudioManager` sources and several BGM/SFX clips are unassigned in the scene.
+
+Revised readiness estimate:
+
+- Core gameplay logic: about 80%.
+- Playable MVP: about 72-74%.
+- Release-candidate readiness: about 62-66%.
+- Audio/SFX readiness: about 30-40%.
+
+Next priority: repair scene/prefab/audio references first, then run a real scene smoke test from start through game over and ending.
