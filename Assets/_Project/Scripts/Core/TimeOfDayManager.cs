@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using System.Collections;
 
 public class TimeOfDayManager : MonoBehaviour
@@ -17,6 +18,8 @@ public class TimeOfDayManager : MonoBehaviour
 
     [Header("Transition")]
     public float transitionDuration = 5.0f;
+    [SerializeField, Range(0f, 1f)] private float playableNightVolumeWeight = 0.15f;
+    [SerializeField] private float playableNightIntensity = 0.65f;
 
     private bool isMorning = false;
 
@@ -37,6 +40,38 @@ public class TimeOfDayManager : MonoBehaviour
     {
         if (isMorning) return;
         StartCoroutine(TransitionRoutine());
+    }
+
+    public void RestorePlayableLighting()
+    {
+        StopAllCoroutines();
+        isMorning = false;
+
+        if (nightVolume) nightVolume.weight = playableNightVolumeWeight;
+        if (morningVolume) morningVolume.weight = 0f;
+
+        if (directionalLight)
+        {
+            directionalLight.color = nightColor;
+            directionalLight.intensity = playableNightIntensity;
+        }
+
+        RenderSettings.skybox = null;
+        RenderSettings.ambientMode = AmbientMode.Trilight;
+        RenderSettings.ambientSkyColor = new Color(0.025f, 0.035f, 0.08f, 1f);
+        RenderSettings.ambientEquatorColor = new Color(0.018f, 0.022f, 0.045f, 1f);
+        RenderSettings.ambientGroundColor = new Color(0.01f, 0.01f, 0.018f, 1f);
+        RenderSettings.fog = true;
+        RenderSettings.fogColor = new Color(0.015f, 0.018f, 0.035f, 1f);
+        RenderSettings.fogDensity = 0.012f;
+
+        foreach (Camera camera in FindObjectsByType<Camera>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+        {
+            camera.clearFlags = CameraClearFlags.SolidColor;
+            camera.backgroundColor = new Color(0.012f, 0.014f, 0.03f, 1f);
+            UniversalAdditionalCameraData cameraData = camera.GetUniversalAdditionalCameraData();
+            if (cameraData != null) cameraData.renderPostProcessing = false;
+        }
     }
 
     private IEnumerator TransitionRoutine()

@@ -58,6 +58,13 @@ namespace LightNShadowSurvivor
             OnHealthChanged?.Invoke(currentHealth);
         }
 
+        public void RestoreFullHealth()
+        {
+            isDead = false;
+            currentHealth = maxHealth;
+            OnHealthChanged?.Invoke(currentHealth);
+        }
+
         private void Die()
         {
             if (isDead) return;

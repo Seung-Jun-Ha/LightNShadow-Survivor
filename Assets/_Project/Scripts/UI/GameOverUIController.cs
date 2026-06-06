@@ -1,8 +1,12 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using TMPro;
 using System.Collections;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem.UI;
+#endif
 
 namespace LightNShadowSurvivor
 {
@@ -12,16 +16,21 @@ namespace LightNShadowSurvivor
         [SerializeField] private Button retryButton;
         [SerializeField] private Button quitButton;
         [SerializeField] private TextMeshProUGUI wastedText;
+        private bool retryListenerBound;
+        private bool quitListenerBound;
 
         private void Start()
         {
+            ResolveButtons();
+            EnsureEventSystem();
+
             if (gameOverPanel != null) gameOverPanel.SetActive(false);
-            if (retryButton != null) retryButton.onClick.AddListener(RetryGame);
-            if (quitButton != null) quitButton.onClick.AddListener(QuitGame);
+            BindButtonListeners();
 
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.OnStateChanged += HandleStateChanged;
+                HandleStateChanged(GameManager.Instance.CurrentState);
             }
         }
 
@@ -40,6 +49,9 @@ namespace LightNShadowSurvivor
                 
                 if (isGameOver)
                 {
+                    ResolveButtons();
+                    BindButtonListeners();
+                    EnsureEventSystem();
                     Cursor.visible = true;
                     Cursor.lockState = CursorLockMode.None;
                     StartCoroutine(WastedSequence());
@@ -74,6 +86,8 @@ namespace LightNShadowSurvivor
         private void RetryGame()
         {
             Time.timeScale = 1f;
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
             SceneManager.LoadScene("GameScene");
         }
 
@@ -89,6 +103,66 @@ namespace LightNShadowSurvivor
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().name);
             }
+        }
+
+        private void ResolveButtons()
+        {
+            if (retryButton != null && quitButton != null) return;
+
+            foreach (Button button in FindObjectsByType<Button>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                string lowerName = button.gameObject.name.ToLowerInvariant();
+                if (retryButton == null && (lowerName.Contains("retry") || lowerName.Contains("restart")))
+                {
+                    retryButton = button;
+                }
+                else if (quitButton == null && lowerName.Contains("quit"))
+                {
+                    quitButton = button;
+                }
+            }
+        }
+
+        private void BindButtonListeners()
+        {
+            if (retryButton != null && !retryListenerBound)
+            {
+                retryButton.onClick.AddListener(RetryGame);
+                retryListenerBound = true;
+            }
+
+            if (quitButton != null && !quitListenerBound)
+            {
+                quitButton.onClick.AddListener(QuitGame);
+                quitListenerBound = true;
+            }
+        }
+
+        private static void EnsureEventSystem()
+        {
+            GameObject eventSystemObject;
+            if (EventSystem.current != null)
+            {
+                eventSystemObject = EventSystem.current.gameObject;
+                eventSystemObject.SetActive(true);
+            }
+            else
+            {
+                eventSystemObject = new GameObject("RuntimeEventSystem", typeof(EventSystem));
+            }
+
+            BaseInputModule module = eventSystemObject.GetComponent<BaseInputModule>();
+            if (module != null)
+            {
+                module.enabled = true;
+                return;
+            }
+
+#if ENABLE_INPUT_SYSTEM
+            eventSystemObject.AddComponent<InputSystemUIInputModule>();
+#else
+            eventSystemObject.AddComponent<StandaloneInputModule>();
+#endif
         }
     }
 }

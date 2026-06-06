@@ -11,8 +11,8 @@ namespace LightNShadowSurvivor
         [SerializeField] private int currentLevel = 1;
         [SerializeField] private float currentXP = 0f;
         [SerializeField] private int maxLevel = 5;
-        [SerializeField] private float[] xpRequirements = { 10f, 15f, 20f, 25f, 30f };
-        [SerializeField] private float xpToNextLevel = 10f;
+        [SerializeField] private float[] xpRequirements = { 30f, 45f, 60f, 75f, 90f };
+        [SerializeField] private float xpToNextLevel = 30f;
 
         public event Action<int> OnLevelUp;
         public event Action<float, float> OnXPChanged;
@@ -28,7 +28,7 @@ namespace LightNShadowSurvivor
             else Destroy(gameObject);
 
             maxLevel = 5;
-            xpRequirements = new[] { 10f, 15f, 20f, 25f, 30f };
+            xpRequirements = new[] { 30f, 45f, 60f, 75f, 90f };
             currentLevel = Mathf.Clamp(currentLevel, 1, maxLevel);
             xpToNextLevel = GetXPRequirement(currentLevel);
         }

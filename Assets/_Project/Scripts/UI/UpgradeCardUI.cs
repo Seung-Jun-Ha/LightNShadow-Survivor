@@ -11,6 +11,7 @@ namespace LightNShadowSurvivor
         public TextMeshProUGUI descriptionText;
         public Image iconImage;
         public Button selectButton;
+        public Button[] additionalSelectButtons;
 
         private UpgradeData currentData;
         private Action<UpgradeData> onSelected;
@@ -22,12 +23,15 @@ namespace LightNShadowSurvivor
             onSelected = callback;
             hasSelected = false;
 
+            ApplyTextStyle();
+
             if (data == null)
             {
                 if (nameText != null) nameText.text = "Unavailable";
                 if (descriptionText != null) descriptionText.text = string.Empty;
                 if (iconImage != null) iconImage.enabled = false;
                 if (selectButton != null) selectButton.interactable = false;
+                SetAdditionalButtonsInteractable(false);
                 return;
             }
 
@@ -45,6 +49,17 @@ namespace LightNShadowSurvivor
                 selectButton.onClick.RemoveAllListeners();
                 selectButton.onClick.AddListener(Select);
             }
+
+            if (additionalSelectButtons != null)
+            {
+                foreach (Button button in additionalSelectButtons)
+                {
+                    if (button == null || button == selectButton) continue;
+                    button.interactable = true;
+                    button.onClick.RemoveAllListeners();
+                    button.onClick.AddListener(Select);
+                }
+            }
         }
 
         private void Select()
@@ -53,12 +68,46 @@ namespace LightNShadowSurvivor
 
             hasSelected = true;
             if (selectButton != null) selectButton.interactable = false;
+            SetAdditionalButtonsInteractable(false);
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayButtonClickSFX();
+            Debug.Log($"[UpgradeCardUI] Selected upgrade: {currentData.upgradeName}");
             onSelected?.Invoke(currentData);
         }
 
         private void OnDisable()
         {
             if (selectButton != null) selectButton.onClick.RemoveListener(Select);
+            if (additionalSelectButtons == null) return;
+
+            foreach (Button button in additionalSelectButtons)
+            {
+                if (button != null) button.onClick.RemoveListener(Select);
+            }
+        }
+
+        private void ApplyTextStyle()
+        {
+            if (nameText != null)
+            {
+                nameText.fontSize = Mathf.RoundToInt(nameText.fontSize * 1.3f);
+                nameText.fontStyle |= FontStyles.Bold;
+            }
+
+            if (descriptionText != null)
+            {
+                descriptionText.fontSize = Mathf.RoundToInt(descriptionText.fontSize * 1.3f);
+                descriptionText.fontStyle |= FontStyles.Bold;
+            }
+        }
+
+        private void SetAdditionalButtonsInteractable(bool interactable)
+        {
+            if (additionalSelectButtons == null) return;
+
+            foreach (Button button in additionalSelectButtons)
+            {
+                if (button != null) button.interactable = interactable;
+            }
         }
     }
 }

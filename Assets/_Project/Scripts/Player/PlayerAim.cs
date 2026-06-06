@@ -21,6 +21,7 @@ namespace LightNShadowSurvivor
         [Header("Aiming Config")]
         [SerializeField] private float aimDistance = 20f;
         [SerializeField] private float verticalLimit = 2.0f;
+        [SerializeField] private float horizontalAimAngle = 120f;
         [SerializeField] private LayerMask aimSurfaceMask = 0;
 
         private Vector3 currentTargetPoint;
@@ -88,25 +89,38 @@ namespace LightNShadowSurvivor
 
             if (aimSurfaceMask.value != 0 && Physics.Raycast(ray, out RaycastHit hit, aimDistance * 2f, aimSurfaceMask, QueryTriggerInteraction.Ignore))
             {
-                currentTargetPoint = ClampVerticalTarget(hit.point);
+                currentTargetPoint = ClampAimTarget(hit.point);
                 return;
             }
 
             Plane aimPlane = new Plane(Vector3.up, transform.position + Vector3.up * 0.8f);
             if (aimPlane.Raycast(ray, out float enter))
             {
-                currentTargetPoint = ClampVerticalTarget(ray.GetPoint(enter));
+                currentTargetPoint = ClampAimTarget(ray.GetPoint(enter));
             }
             else
             {
-                currentTargetPoint = ClampVerticalTarget(ray.GetPoint(aimDistance));
+                currentTargetPoint = ClampAimTarget(ray.GetPoint(aimDistance));
             }
         }
 
-        private Vector3 ClampVerticalTarget(Vector3 targetPoint)
+        private Vector3 ClampAimTarget(Vector3 targetPoint)
         {
+            Vector3 playerPosition = transform.position;
+            Vector3 toTarget = Vector3.ProjectOnPlane(targetPoint - playerPosition, Vector3.up);
+            float distance = Mathf.Clamp(toTarget.magnitude, 0.1f, aimDistance);
+            Vector3 forward = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
+            if (forward.sqrMagnitude < 0.001f) forward = Vector3.forward;
+
+            Vector3 direction = toTarget.sqrMagnitude > 0.001f ? toTarget.normalized : forward;
+            float halfAngle = Mathf.Max(0f, horizontalAimAngle) * 0.5f;
+            float signedAngle = Vector3.SignedAngle(forward, direction, Vector3.up);
+            float clampedAngle = Mathf.Clamp(signedAngle, -halfAngle, halfAngle);
+            Vector3 clampedDirection = Quaternion.AngleAxis(clampedAngle, Vector3.up) * forward;
+
+            targetPoint = playerPosition + clampedDirection * distance;
             float limit = Mathf.Max(0f, verticalLimit);
-            targetPoint.y = Mathf.Clamp(targetPoint.y, transform.position.y - limit, transform.position.y + limit);
+            targetPoint.y = Mathf.Clamp(targetPoint.y, playerPosition.y - limit, playerPosition.y + limit);
             return targetPoint;
         }
 
@@ -138,14 +152,5 @@ namespace LightNShadowSurvivor
             target.rotation = Quaternion.Slerp(target.rotation, targetRot, rotationSmoothSpeed * Time.deltaTime);
         }
 
-        private void OnDrawGizmos()
-        {
-            if (Application.isPlaying)
-            {
-                Gizmos.color = Color.yellow;
-                Gizmos.DrawWireSphere(currentTargetPoint, 0.5f);
-                if (rightHandBone != null) Gizmos.DrawLine(rightHandBone.position, currentTargetPoint);
-            }
-        }
     }
 }

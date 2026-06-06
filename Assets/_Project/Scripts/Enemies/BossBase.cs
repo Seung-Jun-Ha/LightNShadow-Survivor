@@ -164,6 +164,12 @@ namespace LightNShadowSurvivor
             if (isDead) return;
 
             base.Die();
+            TimeOfDayManager timeOfDayManager = FindAnyObjectByType<TimeOfDayManager>();
+            if (timeOfDayManager != null)
+            {
+                timeOfDayManager.ClearAllStages();
+            }
+
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.TriggerEnding();

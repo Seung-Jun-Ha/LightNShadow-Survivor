@@ -8,10 +8,11 @@ namespace LightNShadowSurvivor
     public class PlayerController : MonoBehaviour
     {
         private const float InitialMoveSpeed = 4f;
+        private const float InitialTurnSpeed = 140f;
 
         [Header("Movement Settings")]
         [SerializeField] private float moveSpeed = InitialMoveSpeed;
-        [SerializeField] private float turnSpeed = 100f; // Adjusted for degrees per second
+        [SerializeField] private float turnSpeed = InitialTurnSpeed;
 
         [Header("Collision Settings")]
         [SerializeField] private float capsuleHeight = 1.8f;
@@ -29,6 +30,8 @@ namespace LightNShadowSurvivor
         private Animator animator;
         private InputAction moveAction;
         private Vector2 moveInput;
+        private Vector3 spawnPosition;
+        private Quaternion spawnRotation;
 
         public static PlayerController Instance { get; private set; }
 
@@ -36,6 +39,9 @@ namespace LightNShadowSurvivor
         {
             Instance = this;
             moveSpeed = InitialMoveSpeed;
+            turnSpeed = Mathf.Max(turnSpeed, InitialTurnSpeed);
+            spawnPosition = transform.position;
+            spawnRotation = transform.rotation;
             rb = GetComponent<Rigidbody>();
             if (rb == null) rb = gameObject.AddComponent<Rigidbody>();
 
@@ -136,6 +142,19 @@ namespace LightNShadowSurvivor
             // Maintain vertical velocity (gravity/jumping)
             targetVelocity.y = rb.linearVelocity.y;
             rb.linearVelocity = targetVelocity;
+        }
+
+        public void ResetToSpawn()
+        {
+            transform.SetPositionAndRotation(spawnPosition, spawnRotation);
+
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                rb.position = spawnPosition;
+                rb.rotation = spawnRotation;
+            }
         }
 
         private void UpdateAnimations()

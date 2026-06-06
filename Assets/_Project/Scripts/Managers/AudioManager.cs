@@ -1,5 +1,7 @@
 using UnityEngine;
-using System.Collections.Generic;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace LightNShadowSurvivor
 {
@@ -23,6 +25,7 @@ namespace LightNShadowSurvivor
         [SerializeField] private AudioClip roundClearSFX;       // 18
         [SerializeField] private AudioClip playerHitSFX;        // 47
         [SerializeField] private AudioClip playerDeathSFX;      // 49
+        private bool subscribedToRoundManager;
 
         private void Awake()
         {
@@ -30,25 +33,34 @@ namespace LightNShadowSurvivor
             else Destroy(gameObject);
             
             if (bgmSource == null) bgmSource = gameObject.AddComponent<AudioSource>();
-            bgmSource.loop = true;
+            ConfigureAudioSource(bgmSource, true);
 
             if (sfxSource == null)
             {
                 sfxSource = gameObject.AddComponent<AudioSource>();
-                sfxSource.playOnAwake = false;
             }
+            ConfigureAudioSource(sfxSource, false);
+
+            AssignDefaultClipsIfMissing();
+            EnsureAudioListener();
         }
 
         private void Start()
         {
             if (GameManager.Instance != null)
                 GameManager.Instance.OnStateChanged += HandleStateChanged;
+
+            SubscribeToRoundManager();
+            Debug.Log($"[AudioManager] Output GameObject: {gameObject.name}. BGM Source: {bgmSource.name}, SFX Source: {sfxSource.name}");
         }
 
         private void OnDestroy()
         {
             if (GameManager.Instance != null)
                 GameManager.Instance.OnStateChanged -= HandleStateChanged;
+
+            if (RoundManager.Instance != null)
+                RoundManager.Instance.OnRoundStarted -= HandleRoundStarted;
         }
 
         private void HandleStateChanged(GameState state)
@@ -56,6 +68,7 @@ namespace LightNShadowSurvivor
             switch (state)
             {
                 case GameState.Round:
+                    SubscribeToRoundManager();
                     PlayRoundMusic();
                     break;
                 case GameState.Ending:
@@ -67,12 +80,29 @@ namespace LightNShadowSurvivor
             }
         }
 
+        private void SubscribeToRoundManager()
+        {
+            if (subscribedToRoundManager || RoundManager.Instance == null) return;
+
+            RoundManager.Instance.OnRoundStarted += HandleRoundStarted;
+            subscribedToRoundManager = true;
+        }
+
+        private void HandleRoundStarted(int round)
+        {
+            PlayRoundMusic(round);
+        }
+
         private void PlayRoundMusic()
         {
             if (RoundManager.Instance == null) return;
+            PlayRoundMusic(RoundManager.Instance.CurrentRound);
+        }
 
+        private void PlayRoundMusic(int round)
+        {
             AudioClip clip = round1Music;
-            switch (RoundManager.Instance.CurrentRound)
+            switch (round)
             {
                 case 1: clip = round1Music; break;
                 case 2: clip = round2Music; break;
@@ -87,14 +117,25 @@ namespace LightNShadowSurvivor
 
         public void PlayBGM(AudioClip clip)
         {
-            if (clip == null) return;
+            if (clip == null)
+            {
+                Debug.LogWarning("[AudioManager] Tried to play a null BGM clip.");
+                return;
+            }
+
             bgmSource.clip = clip;
             bgmSource.Play();
+            Debug.Log($"[AudioManager] Playing BGM '{clip.name}' from '{bgmSource.gameObject.name}'.");
         }
 
         public void PlaySFX(AudioClip clip)
         {
-            if (clip == null || sfxSource == null) return;
+            if (clip == null || sfxSource == null)
+            {
+                Debug.LogWarning("[AudioManager] Tried to play a null SFX clip or SFX source is missing.");
+                return;
+            }
+
             sfxSource.PlayOneShot(clip);
         }
 
@@ -108,5 +149,55 @@ namespace LightNShadowSurvivor
         public void PlayRoundClearSFX() => PlaySFX(roundClearSFX);
         public void PlayPlayerHitSFX() => PlaySFX(playerHitSFX);
         public void PlayPlayerDeathSFX() => PlaySFX(playerDeathSFX);
+
+        private void AssignDefaultClipsIfMissing()
+        {
+#if UNITY_EDITOR
+            round1Music ??= LoadClip("Assets/Halloween Game Music Pack/Halloween Music Pack/Ambient/Ambient_1/Ambient_1_LOOP.mp3");
+            round2Music ??= LoadClip("Assets/Halloween Game Music Pack/Halloween Music Pack/Ambient/Ambient_2/Ambient_2_LOOP.mp3");
+            round3Music ??= LoadClip("Assets/Halloween Game Music Pack/Halloween Music Pack/Suspense/Suspense_1/Suspense_1_LOOP.mp3");
+
+            buttonClickSFX ??= LoadClip("Assets/Casual Game Sounds U6/CasualGameSounds/DM-CGS-03.wav");
+            monsterDeathR1SFX ??= LoadClip("Assets/Casual Game Sounds U6/CasualGameSounds/DM-CGS-05.wav");
+            monsterDeathR2SFX ??= LoadClip("Assets/Casual Game Sounds U6/CasualGameSounds/DM-CGS-39.wav");
+            levelUpSFX ??= LoadClip("Assets/Casual Game Sounds U6/CasualGameSounds/DM-CGS-12.wav");
+            roundClearSFX ??= LoadClip("Assets/Casual Game Sounds U6/CasualGameSounds/DM-CGS-18.wav");
+            playerHitSFX ??= LoadClip("Assets/Casual Game Sounds U6/CasualGameSounds/DM-CGS-47.wav");
+            playerDeathSFX ??= LoadClip("Assets/Casual Game Sounds U6/CasualGameSounds/DM-CGS-49.wav");
+#endif
+        }
+
+        private static void ConfigureAudioSource(AudioSource source, bool loop)
+        {
+            if (source == null) return;
+
+            source.playOnAwake = false;
+            source.loop = loop;
+            source.mute = false;
+            source.volume = 1f;
+            source.spatialBlend = 0f;
+            source.ignoreListenerPause = true;
+        }
+
+        private void EnsureAudioListener()
+        {
+            if (FindAnyObjectByType<AudioListener>() != null) return;
+
+            gameObject.AddComponent<AudioListener>();
+            Debug.LogWarning("[AudioManager] No AudioListener was found, so one was added to the AudioManager GameObject.");
+        }
+
+#if UNITY_EDITOR
+        private static AudioClip LoadClip(string path)
+        {
+            AudioClip clip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+            if (clip == null)
+            {
+                Debug.LogWarning($"[AudioManager] Audio clip not found at path: {path}");
+            }
+
+            return clip;
+        }
+#endif
     }
 }

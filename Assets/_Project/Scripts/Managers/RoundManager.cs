@@ -74,6 +74,8 @@ namespace LightNShadowSurvivor
 
         private void StartRoundTimer()
         {
+            RestoreRoundVisualState();
+
             startedRound = currentRound;
             timer = GetRoundDuration(currentRound);
             elapsedTime = 0f;
@@ -84,6 +86,22 @@ namespace LightNShadowSurvivor
 
             OnRoundStarted?.Invoke(currentRound);
             OnRoundTimeChanged?.Invoke(timer, elapsedTime);
+        }
+
+        private void RestoreRoundVisualState()
+        {
+            foreach (UpgradeUIController controller in FindObjectsByType<UpgradeUIController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (controller != null) controller.HideUpgradeSelection();
+            }
+
+            foreach (global::TimeOfDayManager timeOfDay in FindObjectsByType<global::TimeOfDayManager>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (timeOfDay != null) timeOfDay.RestorePlayableLighting();
+            }
+
+            RenderSettings.ambientIntensity = 0.45f;
+            RenderSettings.fogDensity = 0.015f;
         }
 
         private void Update()
@@ -124,11 +142,14 @@ namespace LightNShadowSurvivor
             var spawner = FindAnyObjectByType<MonsterSpawner>();
             if (spawner != null) spawner.StopAndClearMonsters();
 
+            RestorePlayerForNextRound();
+
             if (GameManager.Instance == null) return;
 
             if (currentRound < 3)
             {
-                GameManager.Instance.OpenUpgrade();
+                currentRound = Mathf.Clamp(currentRound + 1, 1, 3);
+                GameManager.Instance.ShowRoundIntroThenStart(currentRound);
             }
             else
             {
@@ -140,6 +161,15 @@ namespace LightNShadowSurvivor
         {
             currentRound = Mathf.Clamp(currentRound + 1, 1, 3);
             if (GameManager.Instance != null) GameManager.Instance.StartRound();
+        }
+
+        private static void RestorePlayerForNextRound()
+        {
+            if (PlayerController.Instance == null) return;
+
+            PlayerController.Instance.ResetToSpawn();
+            PlayerHealth health = PlayerController.Instance.GetComponent<PlayerHealth>();
+            if (health != null) health.RestoreFullHealth();
         }
 
         private float GetRoundDuration(int round)

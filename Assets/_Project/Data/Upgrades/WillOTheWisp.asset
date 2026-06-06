@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b336e174ea7a9734dad1668f67620b84, type: 3}
   m_Name: WillOTheWisp
   m_EditorClassIdentifier: Assembly-CSharp::LightNShadowSurvivor.UpgradeData
-  upgradeName: Will-o'-the-wisp
-  description: A floating spirit that orbits you and damages nearby ghosts.
+  upgradeName: Wisp
+  description: Wisp +1
   icon: {fileID: 0}
   upgradeType: 4
   increaseValue: 1

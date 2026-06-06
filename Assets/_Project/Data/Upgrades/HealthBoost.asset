@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b336e174ea7a9734dad1668f67620b84, type: 3}
   m_Name: Durability
   m_EditorClassIdentifier: Assembly-CSharp::LightNShadowSurvivor.UpgradeData
-  upgradeName: Durability
-  description: Reduce incoming damage by 10%
+  upgradeName: Shield
+  description: Hit Damage -10%
   icon: {fileID: 0}
   upgradeType: 1
   increaseValue: 0.1

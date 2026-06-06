@@ -115,7 +115,7 @@ namespace LightNShadowSurvivor
             if (gameUIPanel != null)
             {
                 // Only show HUD during Round or Upgrade
-                bool showHUD = (state == GameState.Round || state == GameState.Upgrade);
+                bool showHUD = state == GameState.Round || state == GameState.Upgrade;
                 gameUIPanel.SetActive(showHUD);
                 Debug.Log($"[UIManager] HUD visibility set to: {showHUD}");
             }

@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b336e174ea7a9734dad1668f67620b84, type: 3}
   m_Name: LightPower
   m_EditorClassIdentifier: Assembly-CSharp::LightNShadowSurvivor.UpgradeData
-  upgradeName: LightPower
-  description: Increase flashlight damage by 0.5 per second
+  upgradeName: Power
+  description: Hit Damage +0.5
   icon: {fileID: 0}
   upgradeType: 2
   increaseValue: 0.5

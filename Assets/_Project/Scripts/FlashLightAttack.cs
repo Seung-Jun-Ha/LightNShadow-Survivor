@@ -10,6 +10,7 @@ namespace LightNShadowSurvivor
     public class FlashLightAttack : MonoBehaviour
     {
         private const float InitialDamagePerSecond = 1f;
+        private const float InitialRange = 10f;
 
         [Header("Light Attack")]
         [SerializeField] private bool requireFireInput = false;
@@ -17,7 +18,7 @@ namespace LightNShadowSurvivor
         [SerializeField] private int maxTargets = 64;
 
         public float damagePerSecond = 1f;
-        public float range = 6f;
+        public float range = 10f;
         public float angle = 30f;
         public LayerMask targetLayer;
 
@@ -27,6 +28,7 @@ namespace LightNShadowSurvivor
         private void Awake()
         {
             damagePerSecond = InitialDamagePerSecond;
+            range = InitialRange;
             hitBuffer = new Collider[Mathf.Max(1, maxTargets)];
         }
 

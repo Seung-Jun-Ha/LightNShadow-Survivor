@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b336e174ea7a9734dad1668f67620b84, type: 3}
   m_Name: LightArea
   m_EditorClassIdentifier: Assembly-CSharp::LightNShadowSurvivor.UpgradeData
-  upgradeName: LightArea
-  description: Increase flashlight diameter by 10%
+  upgradeName: Range
+  description: Light +10%
   icon: {fileID: 0}
   upgradeType: 3
   increaseValue: 0.1

@@ -1,13 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace LightNShadowSurvivor
 {
     public class MonsterSpawner : MonoBehaviour
     {
-        private const float Round1SpawnInterval = 1f;
-        private const float Round2SpawnInterval = 2f;
+        private const float Round1SpawnInterval = 2f;
+        private const float Round2SpawnInterval = 4f;
         private const float Round1Health = 2f;
         private const float Round2Health = 4f;
         private const float BossHealth = 30f;
@@ -16,11 +19,16 @@ namespace LightNShadowSurvivor
         private const float Round1MoveSpeed = 3.5f;
         private const float Round2MoveSpeed = 4f;
         private const float BossMoveSpeed = 4.5f;
+        private const float MonsterMoveSpeedMultiplier = 0.7f;
+        private const float MonsterDamageMultiplier = 0.7f;
+        private const float MonsterAttackRangeMultiplier = 0.5f;
+        private const float MinimumSpawnRadius = 20f;
 
         [Header("Spawn Settings")]
         [SerializeField] private List<GameObject> round1Monsters;
         [SerializeField] private List<GameObject> round2Monsters;
         [SerializeField] private List<GameObject> round3Monsters;
+        [SerializeField] private bool autoUseCuteGhostsForRound2 = true;
         [SerializeField] private GameObject bossPrefab;
         [SerializeField] private float spawnRadius = 10f;
         [SerializeField] private float startDelay = 2f;
@@ -35,6 +43,9 @@ namespace LightNShadowSurvivor
 
         private void Start()
         {
+            PopulateRound2CuteGhostsIfNeeded();
+            spawnRadius = Mathf.Max(spawnRadius, MinimumSpawnRadius);
+
             if (PlayerController.Instance != null)
             {
                 player = PlayerController.Instance.transform;
@@ -141,7 +152,12 @@ namespace LightNShadowSurvivor
 
             bossBase.ConfigureBoss(BossHealth);
             GhostAI bossAI = boss.GetComponentInChildren<GhostAI>();
-            if (bossAI != null) bossAI.ConfigureMoveSpeed(BossMoveSpeed);
+            if (bossAI != null)
+            {
+                bossAI.ConfigureMoveSpeed(BossMoveSpeed * MonsterMoveSpeedMultiplier);
+                bossAI.ConfigureDamageMultiplier(MonsterDamageMultiplier);
+                bossAI.ConfigureAttackRangeMultiplier(MonsterAttackRangeMultiplier);
+            }
             var deathHandler = boss.GetComponentInChildren<MonsterDeathHandler>();
             if (deathHandler != null) deathHandler.ConfigureExperienceReward(0f);
             Debug.Log($"[MonsterSpawner] Boss HP configured to {BossHealth:F0}.");
@@ -181,6 +197,10 @@ namespace LightNShadowSurvivor
             
             SetupEnemyLayer(spawned);
             ConfigureRegularMonster(spawned);
+            if (currentRound == 2)
+            {
+                FixRound2MonsterMaterials(spawned);
+            }
         }
 
         private void SetupEnemyLayer(GameObject obj)
@@ -201,7 +221,7 @@ namespace LightNShadowSurvivor
             {
                 case 1: return Round1SpawnInterval;
                 case 2: return Round2SpawnInterval;
-                default: return 1f;
+                default: return 2f;
             }
         }
 
@@ -221,7 +241,10 @@ namespace LightNShadowSurvivor
             {
                 ghostAI = monster.AddComponent<GhostAI>();
             }
-            ghostAI.ConfigureMoveSpeed(currentRound == 1 ? Round1MoveSpeed : Round2MoveSpeed);
+            float moveSpeed = currentRound == 1 ? Round1MoveSpeed : Round2MoveSpeed;
+            ghostAI.ConfigureMoveSpeed(moveSpeed * MonsterMoveSpeedMultiplier);
+            ghostAI.ConfigureDamageMultiplier(MonsterDamageMultiplier);
+            ghostAI.ConfigureAttackRangeMultiplier(MonsterAttackRangeMultiplier);
 
             if (monster.GetComponentInChildren<LightDamageReceiver>() == null)
             {
@@ -287,6 +310,90 @@ namespace LightNShadowSurvivor
             {
                 blob.enabled = false;
             }
+        }
+
+        private void PopulateRound2CuteGhostsIfNeeded()
+        {
+            if (!autoUseCuteGhostsForRound2) return;
+
+#if UNITY_EDITOR
+            round2Monsters ??= new List<GameObject>();
+            round2Monsters.Clear();
+
+            string[] guids = AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/ThirdParty/Monster_Ghosts_FREE/Prefabs" });
+            foreach (string guid in guids)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (!path.Contains("Little_Ghost_ZOMbi")) continue;
+
+                GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                if (prefab != null && !round2Monsters.Contains(prefab))
+                {
+                    round2Monsters.Add(prefab);
+                }
+            }
+
+            if (round2Monsters.Count == 0)
+            {
+                Debug.LogWarning("[MonsterSpawner] Could not auto-populate Cute Monster Ghost prefabs for round 2.");
+            }
+#endif
+        }
+
+        private static void FixRound2MonsterMaterials(GameObject monster)
+        {
+            if (monster == null) return;
+
+            Shader shader = Shader.Find("Universal Render Pipeline/Lit");
+            if (shader == null) shader = Shader.Find("Standard");
+            if (shader == null) return;
+
+            foreach (Renderer renderer in monster.GetComponentsInChildren<Renderer>(true))
+            {
+                Material[] sourceMaterials = renderer.sharedMaterials;
+                Material[] fixedMaterials = new Material[sourceMaterials.Length];
+
+                for (int i = 0; i < sourceMaterials.Length; i++)
+                {
+                    Material source = sourceMaterials[i];
+                    Material fixedMaterial = new Material(shader)
+                    {
+                        name = source != null ? $"{source.name}_RuntimeURP" : "Round2Ghost_RuntimeURP"
+                    };
+
+                    if (source != null)
+                    {
+                        CopyTexture(source, fixedMaterial, "_MainTex", "_BaseMap");
+                        CopyTexture(source, fixedMaterial, "_BaseMap", "_BaseMap");
+                        CopyColor(source, fixedMaterial, "_Color", "_BaseColor");
+                        CopyColor(source, fixedMaterial, "_BaseColor", "_BaseColor");
+                        CopyColor(source, fixedMaterial, "_EmissionColor", "_EmissionColor");
+                    }
+                    else if (fixedMaterial.HasProperty("_BaseColor"))
+                    {
+                        fixedMaterial.SetColor("_BaseColor", Color.white);
+                    }
+
+                    fixedMaterials[i] = fixedMaterial;
+                }
+
+                renderer.materials = fixedMaterials;
+            }
+        }
+
+        private static void CopyTexture(Material source, Material target, string sourceProperty, string targetProperty)
+        {
+            if (!source.HasProperty(sourceProperty) || !target.HasProperty(targetProperty)) return;
+
+            Texture texture = source.GetTexture(sourceProperty);
+            if (texture != null) target.SetTexture(targetProperty, texture);
+        }
+
+        private static void CopyColor(Material source, Material target, string sourceProperty, string targetProperty)
+        {
+            if (!source.HasProperty(sourceProperty) || !target.HasProperty(targetProperty)) return;
+
+            target.SetColor(targetProperty, source.GetColor(sourceProperty));
         }
 
         public void StopAndClearMonsters()

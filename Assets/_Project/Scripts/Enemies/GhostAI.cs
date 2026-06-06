@@ -11,6 +11,8 @@ namespace LightNShadowSurvivor
         [SerializeField] private float attackCooldown = 2.0f;
         [SerializeField] private float damageAmount = 10f;
         [SerializeField] private float moveSpeed = 3.5f;
+        [SerializeField, Range(0f, 1f)] private float damageMultiplier = 0.7f;
+        [SerializeField, Range(0.1f, 1f)] private float attackRangeMultiplier = 0.5f;
 
         [Header("Floating Animation")]
         [SerializeField] private float floatHeight = 0.5f;
@@ -106,7 +108,7 @@ namespace LightNShadowSurvivor
 
             float distanceToPlayer = Vector3.Distance(transform.position, player.position);
 
-            if (distanceToPlayer <= attackRange)
+            if (distanceToPlayer <= GetEffectiveAttackRange())
             {
                 AttackPlayer();
             }
@@ -157,7 +159,7 @@ namespace LightNShadowSurvivor
                 
                 if (playerHealth != null)
                 {
-                    playerHealth.TakeDamage(damageAmount);
+                    playerHealth.TakeDamage(damageAmount * damageMultiplier);
                 }
             }
         }
@@ -176,6 +178,16 @@ namespace LightNShadowSurvivor
             {
                 agent.speed = moveSpeed;
             }
+        }
+
+        public void ConfigureDamageMultiplier(float multiplier)
+        {
+            damageMultiplier = Mathf.Clamp01(multiplier);
+        }
+
+        public void ConfigureAttackRangeMultiplier(float multiplier)
+        {
+            attackRangeMultiplier = Mathf.Clamp(multiplier, 0.1f, 1f);
         }
 
         public void ApplySlow(float speedMultiplier, float duration)
@@ -233,6 +245,11 @@ namespace LightNShadowSurvivor
             {
                 animator.CrossFade(IdleState, 0.1f);
             }
+        }
+
+        private float GetEffectiveAttackRange()
+        {
+            return attackRange * attackRangeMultiplier;
         }
     }
 }

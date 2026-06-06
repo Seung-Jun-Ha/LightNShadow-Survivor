@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b336e174ea7a9734dad1668f67620b84, type: 3}
   m_Name: SpeedBoost
   m_EditorClassIdentifier: Assembly-CSharp::LightNShadowSurvivor.UpgradeData
-  upgradeName: SpeedBoost
-  description: Increase movement speed by 10%
+  upgradeName: Speed
+  description: Move +10%
   icon: {fileID: 0}
   upgradeType: 0
   increaseValue: 0.1
