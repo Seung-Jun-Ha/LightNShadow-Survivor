@@ -13,7 +13,7 @@
 - 릴리즈 후보 완성도: 약 66%
 - 자동화 테스트 커버리지: 약 54%
 
-전체 구현율은 릴리즈 기준으로 약 70%로 봅니다. 핵심 상태 전환, 사망, 보상, 씬/프리팹 참조, XP 보상 누락, 프로젝트 소유 코드 경고 일부를 해소했습니다. 실제 플레이 품질과 안정성을 보장하려면 수동 전체 루프 검증, 보스/특수 몬스터 검증, UI/연출 완성도 확인이 더 필요합니다. 세부 실행 항목과 테스트 메모는 [docs/implementation-backlog.md](docs/implementation-backlog.md)로 분리했습니다.
+전체 구현율은 릴리즈 기준으로 약 70%로 봅니다. 핵심 상태 전환, 사망, 보상, 씬/프리팹 참조, XP 보상 누락, 프로젝트 소유 코드 경고 일부를 해소했습니다. 실제 플레이 품질과 안정성을 보장하려면 수동 전체 루프 검증, 보스/특수 몬스터 검증, UI/연출 완성도 확인이 더 필요합니다. 세부 실행 항목과 테스트 메모는 [implementation-backlog.md](implementation-backlog.md)로 분리했습니다.
 
 ## 목표 대비 진행률 업데이트
 
@@ -133,7 +133,7 @@
 
 ## 세부 작업 분리
 
-세부 todoList와 테스트 실행 메모는 [docs/implementation-backlog.md](docs/implementation-backlog.md)로 분리했습니다. 이 문서는 상태 판단, 지표, 우선순위만 유지합니다.
+세부 todoList와 테스트 실행 메모는 [implementation-backlog.md](implementation-backlog.md)로 분리했습니다. 이 문서는 상태 판단, 지표, 우선순위만 유지합니다.
 
 ## 판정
 

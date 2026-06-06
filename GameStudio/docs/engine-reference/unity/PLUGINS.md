@@ -57,7 +57,7 @@ These are NOT part of the core engine but are commonly used for specific game ty
 - **Purpose:** Modern input handling (rebindable, cross-platform)
 - **Status:** Production-Ready (default in Unity 6)
 - **Package:** `com.unity.inputsystem`
-- **Docs:** See [modules/input.md](../modules/input.md)
+- **Docs:** See [modules/input.md](modules/input.md)
 - **Official:** https://docs.unity3d.com/Packages/com.unity.inputsystem@1.11/manual/index.html
 
 ---
@@ -66,7 +66,7 @@ These are NOT part of the core engine but are commonly used for specific game ty
 - **Purpose:** Modern runtime UI (HTML/CSS-like, performant)
 - **Status:** Production-Ready (Unity 6)
 - **Package:** Built-in
-- **Docs:** See [modules/ui.md](../modules/ui.md)
+- **Docs:** See [modules/ui.md](modules/ui.md)
 - **Official:** https://docs.unity3d.com/Packages/com.unity.ui@2.0/manual/index.html
 
 ---
@@ -253,5 +253,4 @@ For packages NOT listed above, use the following approach when users ask:
 ## 한국어 설명
 
 이 파일은 Codex Game Studio Framework에서 '.\docs\engine-reference\unity\PLUGINS.md' 경로가 담당하는 원문 지침과 참조 정보를 보존합니다. Codex 환경에서는 AGENTS.md, codex/ 지식 베이스, Unity 우선 엔진 참조를 기준으로 읽으면 됩니다. 핵심 결정은 원문을 삭제하지 않고, Codex 기준 경로와 Unity 제작 흐름을 함께 이해하도록 보조 설명을 추가하는 것입니다.
-
 

@@ -1,6 +1,6 @@
 # 구현 백로그
 
-이 문서는 [docs/implementation-status.md](docs/implementation-status.md)에서 분리한 실행용 작업 목록입니다. 구현 현황 수치, 리스크 요약, 다음 우선순위는 상태 문서를 먼저 읽고, 여기서는 실제로 손댈 항목만 확인합니다.
+이 문서는 [implementation-status.md](implementation-status.md)에서 분리한 실행용 작업 목록입니다. 구현 현황 수치, 리스크 요약, 다음 우선순위는 상태 문서를 먼저 읽고, 여기서는 실제로 손댈 항목만 확인합니다.
 
 ## P0 - 출시 전 필수 확인 작업
 
