@@ -69,7 +69,7 @@ namespace LightNShadowSurvivor
             hasSelected = true;
             if (selectButton != null) selectButton.interactable = false;
             SetAdditionalButtonsInteractable(false);
-            if (AudioManager.Instance != null) AudioManager.Instance.PlayButtonClickSFX();
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySkillSelectSFX();
             Debug.Log($"[UpgradeCardUI] Selected upgrade: {currentData.upgradeName}");
             onSelected?.Invoke(currentData);
         }
