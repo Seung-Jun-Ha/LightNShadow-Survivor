@@ -19,6 +19,7 @@ namespace LightNShadowSurvivor
         [Header("SFX Settings")]
         [SerializeField] private AudioSource sfxSource;
         [SerializeField] private AudioClip buttonClickSFX;      // 03
+        [SerializeField] private AudioClip skillSelectSFX;      // 31
         [SerializeField] private AudioClip monsterDeathR1SFX;   // 05
         [SerializeField] private AudioClip monsterDeathR2SFX;   // 39
         [SerializeField] private AudioClip levelUpSFX;          // 12
@@ -140,6 +141,7 @@ namespace LightNShadowSurvivor
         }
 
         public void PlayButtonClickSFX() => PlaySFX(buttonClickSFX);
+        public void PlaySkillSelectSFX() => PlaySFX(skillSelectSFX);
         public void PlayMonsterDeathSFX()
         {
             int round = RoundManager.Instance != null ? RoundManager.Instance.CurrentRound : 1;
@@ -159,6 +161,7 @@ namespace LightNShadowSurvivor
             endingMusic ??= LoadClip("Assets/OccaSoftware/Fantasy Music Pack/7_Victory.wav");
 
             buttonClickSFX ??= LoadClip("Assets/Casual Game Sounds U6/CasualGameSounds/DM-CGS-03.wav");
+            skillSelectSFX ??= LoadClip("Assets/Casual Game Sounds U6/CasualGameSounds/DM-CGS-31.wav");
             monsterDeathR1SFX ??= LoadClip("Assets/Casual Game Sounds U6/CasualGameSounds/DM-CGS-05.wav");
             monsterDeathR2SFX ??= LoadClip("Assets/Casual Game Sounds U6/CasualGameSounds/DM-CGS-39.wav");
             levelUpSFX ??= LoadClip("Assets/Casual Game Sounds U6/CasualGameSounds/DM-CGS-12.wav");
