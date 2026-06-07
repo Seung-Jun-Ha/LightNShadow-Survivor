@@ -153,9 +153,10 @@ namespace LightNShadowSurvivor
         private void AssignDefaultClipsIfMissing()
         {
 #if UNITY_EDITOR
-            round1Music ??= LoadClip("Assets/Halloween Game Music Pack/Halloween Music Pack/Ambient/Ambient_1/Ambient_1_LOOP.mp3");
-            round2Music ??= LoadClip("Assets/Halloween Game Music Pack/Halloween Music Pack/Ambient/Ambient_2/Ambient_2_LOOP.mp3");
-            round3Music ??= LoadClip("Assets/Halloween Game Music Pack/Halloween Music Pack/Suspense/Suspense_1/Suspense_1_LOOP.mp3");
+            round1Music ??= LoadClip("Assets/OccaSoftware/Fantasy Music Pack/3_Pre-Battle.wav");
+            round2Music ??= LoadClip("Assets/OccaSoftware/Fantasy Music Pack/4_Combat_Loop.wav");
+            round3Music ??= LoadClip("Assets/OccaSoftware/Fantasy Music Pack/5_Combat_Loop.wav");
+            endingMusic ??= LoadClip("Assets/OccaSoftware/Fantasy Music Pack/7_Victory.wav");
 
             buttonClickSFX ??= LoadClip("Assets/Casual Game Sounds U6/CasualGameSounds/DM-CGS-03.wav");
             monsterDeathR1SFX ??= LoadClip("Assets/Casual Game Sounds U6/CasualGameSounds/DM-CGS-05.wav");

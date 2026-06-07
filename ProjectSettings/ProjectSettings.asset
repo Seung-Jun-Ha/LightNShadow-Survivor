@@ -931,11 +931,11 @@ PlayerSettings:
   activeInputHandler: 1
   windowsGamepadBackendHint: 0
   enableDirectStorage: 0
-  cloudProjectId: 8108613d-c2a0-404a-92e9-cfc0eb588800
+  cloudProjectId: e9cfabbb-04be-4e66-971e-896c6e5af1cc
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
   projectName: LightNShadowSurviver
-  organizationId: tjtjdgns9290
+  organizationId: teupaeg797
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}
