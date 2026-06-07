@@ -65,6 +65,12 @@ namespace LightNShadowSurvivor
             {
                 GameStatsManager.Instance.AddKill();
             }
+
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayMonsterDeathSFX();
+            }
+
             StartCoroutine(DeathRoutine());
         }
 
