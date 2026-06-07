@@ -90,12 +90,12 @@ namespace LightNShadowSurvivor
 
         private void RestoreRoundVisualState()
         {
-            foreach (UpgradeUIController controller in FindObjectsByType<UpgradeUIController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (UpgradeUIController controller in FindObjectsByType<UpgradeUIController>(FindObjectsInactive.Include))
             {
                 if (controller != null) controller.HideUpgradeSelection();
             }
 
-            foreach (global::TimeOfDayManager timeOfDay in FindObjectsByType<global::TimeOfDayManager>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (global::TimeOfDayManager timeOfDay in FindObjectsByType<global::TimeOfDayManager>(FindObjectsInactive.Include))
             {
                 if (timeOfDay != null) timeOfDay.RestorePlayableLighting();
             }

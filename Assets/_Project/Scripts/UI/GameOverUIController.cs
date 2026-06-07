@@ -109,7 +109,7 @@ namespace LightNShadowSurvivor
         {
             if (retryButton != null && quitButton != null) return;
 
-            foreach (Button button in FindObjectsByType<Button>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (Button button in FindObjectsByType<Button>(FindObjectsInactive.Include))
             {
                 string lowerName = button.gameObject.name.ToLowerInvariant();
                 if (retryButton == null && (lowerName.Contains("retry") || lowerName.Contains("restart")))

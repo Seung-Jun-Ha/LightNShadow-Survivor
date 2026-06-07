@@ -198,7 +198,7 @@ namespace LightNShadowSurvivor.Tests
             flashlight.transform.SetParent(player.transform);
             Light light = flashlight.AddComponent<Light>();
             Component attack = flashlight.AddComponent(FindType("LightNShadowSurvivor.FlashLightAttack"));
-            SetFieldValue(attack, "lightComponent", light, BindingFlags.Instance | BindingFlags.Public);
+            SetFieldValue(attack, "lightComponent", light, BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
         private static IEnumerator WaitForState(Component gameManager, string expectedState, float timeoutSeconds)

@@ -40,7 +40,7 @@ namespace LightNShadowSurvivor
         private bool bossSpawned = false;
         private Coroutine spawnCoroutine;
         private List<GameObject> activeMonsters = new List<GameObject>();
-        private static readonly Dictionary<int, Material> RuntimeMaterialCache = new Dictionary<int, Material>();
+        private static readonly Dictionary<Material, Material> RuntimeMaterialCache = new Dictionary<Material, Material>();
         private static Material fallbackVisibleMaterial;
 
         private void Start()
@@ -383,8 +383,7 @@ namespace LightNShadowSurvivor
 
         private static Material GetRuntimeReplacementMaterial(Material source, Shader shader)
         {
-            int key = source.GetInstanceID();
-            if (RuntimeMaterialCache.TryGetValue(key, out Material cached) && cached != null)
+            if (RuntimeMaterialCache.TryGetValue(source, out Material cached) && cached != null)
             {
                 return cached;
             }
@@ -400,7 +399,7 @@ namespace LightNShadowSurvivor
             CopyColor(source, replacement, "_BaseColor", "_BaseColor");
             CopyColor(source, replacement, "_EmissionColor", "_EmissionColor");
 
-            RuntimeMaterialCache[key] = replacement;
+            RuntimeMaterialCache[source] = replacement;
             return replacement;
         }
 

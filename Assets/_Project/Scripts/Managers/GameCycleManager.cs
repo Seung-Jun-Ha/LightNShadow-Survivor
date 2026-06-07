@@ -10,20 +10,20 @@ namespace LightNShadowSurvivor
         public static GameCycleManager Instance { get; private set; }
 
         [Header("Timer Settings")]
-        public float stageTime = 60f;
+        [SerializeField] private float stageTime = 60f;
         private float currentTimer;
         private bool isTimerRunning = true;
 
         [Header("UI References")]
-        public GameObject upgradePanel;
-        public Transform cardContainer;
-        public GameObject upgradeCardPrefab;
+        [SerializeField] private GameObject upgradePanel;
+        [SerializeField] private Transform cardContainer;
+        [SerializeField] private GameObject upgradeCardPrefab;
 
         [Header("Upgrade Assets")]
-        public List<UpgradeData> allUpgrades;
+        [SerializeField] private List<UpgradeData> allUpgrades;
         
         [Header("Stage Progression")]
-        public GameObject[] stageAssets;
+        [SerializeField] private GameObject[] stageAssets;
         private int currentStageIndex = 0;
 
         private void Awake()
@@ -157,14 +157,13 @@ namespace LightNShadowSurvivor
         {
             if (data == null) return;
 
-            GameObject player = GameObject.Find("Player_Main");
+            PlayerController player = PlayerController.Instance;
             if (player == null) return;
 
             switch (data.upgradeType)
             {
                 case UpgradeType.MoveSpeed:
-                    var controller = player.GetComponent<PlayerController>();
-                    if (controller != null) controller.IncreaseMoveSpeedPercent(data.increaseValue);
+                    player.IncreaseMoveSpeedPercent(data.increaseValue);
                     break;
 
                 case UpgradeType.Durability:

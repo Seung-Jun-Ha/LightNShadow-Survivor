@@ -245,16 +245,13 @@ namespace LightNShadowSurvivor
 
             TextMeshProUGUI nameText = CreateText("NameText", card.transform, "Skill", 39, new Vector2(0.5f, 1f), new Vector2(0f, -60f), new Vector2(320f, 72f));
             TextMeshProUGUI descText = CreateText("DescriptionText", card.transform, "Description", 29, new Vector2(0.5f, 0.56f), Vector2.zero, new Vector2(300f, 170f));
-            descText.enableWordWrapping = true;
+            descText.textWrappingMode = TextWrappingModes.Normal;
 
             GameObject buttonObject = CreateSteampunkButton("SelectButton", card.transform);
             Button button = buttonObject.GetComponent<Button>();
 
             UpgradeCardUI cardUI = card.AddComponent<UpgradeCardUI>();
-            cardUI.nameText = nameText;
-            cardUI.descriptionText = descText;
-            cardUI.selectButton = button;
-            cardUI.additionalSelectButtons = new[] { cardButton };
+            cardUI.ConfigureBindings(nameText, descText, button, new[] { cardButton });
 
             return card;
         }

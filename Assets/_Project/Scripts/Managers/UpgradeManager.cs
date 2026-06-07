@@ -110,7 +110,7 @@ namespace LightNShadowSurvivor
 
         private static void HideOpenUpgradeUI()
         {
-            UpgradeUIController[] controllers = FindObjectsByType<UpgradeUIController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            UpgradeUIController[] controllers = FindObjectsByType<UpgradeUIController>(FindObjectsInactive.Include);
             foreach (UpgradeUIController controller in controllers)
             {
                 if (controller != null) controller.HideUpgradeSelection();

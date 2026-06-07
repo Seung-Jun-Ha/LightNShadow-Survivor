@@ -99,11 +99,11 @@ namespace LightNShadowSurvivor.Tests
             light.type = LightType.Spot;
 
             Component attack = obj.AddComponent(FindType("LightNShadowSurvivor.FlashLightAttack"));
-            SetFieldValue(attack, "lightComponent", light, BindingFlags.Instance | BindingFlags.Public);
-            SetFieldValue(attack, "range", range, BindingFlags.Instance | BindingFlags.Public);
-            SetFieldValue(attack, "angle", angle, BindingFlags.Instance | BindingFlags.Public);
-            SetFieldValue(attack, "damagePerSecond", damagePerSecond, BindingFlags.Instance | BindingFlags.Public);
-            SetFieldValue(attack, "targetLayer", (LayerMask)(1 << EnemyLayer), BindingFlags.Instance | BindingFlags.Public);
+            SetFieldValue(attack, "lightComponent", light, BindingFlags.Instance | BindingFlags.NonPublic);
+            SetFieldValue(attack, "range", range, BindingFlags.Instance | BindingFlags.NonPublic);
+            SetFieldValue(attack, "angle", angle, BindingFlags.Instance | BindingFlags.NonPublic);
+            SetFieldValue(attack, "damagePerSecond", damagePerSecond, BindingFlags.Instance | BindingFlags.NonPublic);
+            SetFieldValue(attack, "targetLayer", (LayerMask)(1 << EnemyLayer), BindingFlags.Instance | BindingFlags.NonPublic);
             return attack;
         }
 

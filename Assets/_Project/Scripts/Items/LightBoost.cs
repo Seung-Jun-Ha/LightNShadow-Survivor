@@ -20,31 +20,28 @@ namespace LightNShadowSurvivor
 
         private IEnumerator LightBoostRoutine(FlashLightAttack attack)
         {
-            float originalDmg = attack.damagePerSecond;
-            float originalRange = attack.range;
-            
-            attack.damagePerSecond *= damageMultiplier;
-            attack.range *= rangeMultiplier;
+            FlashLightAttack.FlashlightStats originalStats = attack.CaptureStats();
+            attack.ApplyMultipliers(damageMultiplier, rangeMultiplier);
             
             // Visual feedback: change light color or intensity
-            if (attack.lightComponent != null)
+            Light lightComponent = attack.LightComponent;
+            if (lightComponent != null)
             {
-                Color originalColor = attack.lightComponent.color;
-                attack.lightComponent.color = Color.yellow;
-                attack.lightComponent.intensity *= 1.5f;
+                Color originalColor = lightComponent.color;
+                lightComponent.color = Color.yellow;
+                lightComponent.intensity *= 1.5f;
 
                 yield return new WaitForSeconds(duration);
 
-                attack.lightComponent.color = originalColor;
-                attack.lightComponent.intensity /= 1.5f;
+                lightComponent.color = originalColor;
+                lightComponent.intensity /= 1.5f;
             }
             else
             {
                 yield return new WaitForSeconds(duration);
             }
 
-            attack.damagePerSecond = originalDmg;
-            attack.range = originalRange;
+            attack.RestoreStats(originalStats);
         }
     }
 }

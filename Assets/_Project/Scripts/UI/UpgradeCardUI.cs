@@ -7,15 +7,24 @@ namespace LightNShadowSurvivor
 {
     public class UpgradeCardUI : MonoBehaviour
     {
-        public TextMeshProUGUI nameText;
-        public TextMeshProUGUI descriptionText;
-        public Image iconImage;
-        public Button selectButton;
-        public Button[] additionalSelectButtons;
+        [SerializeField] private TextMeshProUGUI nameText;
+        [SerializeField] private TextMeshProUGUI descriptionText;
+        [SerializeField] private Image iconImage;
+        [SerializeField] private Button selectButton;
+        [SerializeField] private Button[] additionalSelectButtons;
 
         private UpgradeData currentData;
         private Action<UpgradeData> onSelected;
         private bool hasSelected;
+
+        public void ConfigureBindings(TextMeshProUGUI nameLabel, TextMeshProUGUI descriptionLabel, Button primaryButton, Button[] extraButtons, Image icon = null)
+        {
+            nameText = nameLabel;
+            descriptionText = descriptionLabel;
+            selectButton = primaryButton;
+            additionalSelectButtons = extraButtons;
+            iconImage = icon;
+        }
 
         public void Setup(UpgradeData data, Action<UpgradeData> callback)
         {

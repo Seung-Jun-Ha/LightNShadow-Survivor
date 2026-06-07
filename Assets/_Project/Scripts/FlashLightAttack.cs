@@ -17,13 +17,18 @@ namespace LightNShadowSurvivor
         [SerializeField] private LayerMask obstacleLayer;
         [SerializeField] private int maxTargets = 64;
 
-        public float damagePerSecond = 1f;
-        public float range = 10f;
-        public float angle = 30f;
-        public LayerMask targetLayer;
+        [SerializeField] private float damagePerSecond = 1f;
+        [SerializeField] private float range = 10f;
+        [SerializeField] private float angle = 30f;
+        [SerializeField] private LayerMask targetLayer;
 
-        public Light lightComponent;
+        [SerializeField] private Light lightComponent;
         private Collider[] hitBuffer;
+
+        public float DamagePerSecond => damagePerSecond;
+        public float Range => range;
+        public float Angle => angle;
+        public Light LightComponent => lightComponent;
 
         private void Awake()
         {
@@ -113,6 +118,35 @@ namespace LightNShadowSurvivor
         public void IncreaseDiameterPercent(float percent)
         {
             range *= 1f + Mathf.Max(0f, percent);
+        }
+
+        public FlashlightStats CaptureStats()
+        {
+            return new FlashlightStats(damagePerSecond, range);
+        }
+
+        public void ApplyMultipliers(float damageMultiplier, float rangeMultiplier)
+        {
+            damagePerSecond *= Mathf.Max(0f, damageMultiplier);
+            range *= Mathf.Max(0f, rangeMultiplier);
+        }
+
+        public void RestoreStats(FlashlightStats stats)
+        {
+            damagePerSecond = Mathf.Max(0f, stats.DamagePerSecond);
+            range = Mathf.Max(0f, stats.Range);
+        }
+
+        public readonly struct FlashlightStats
+        {
+            public readonly float DamagePerSecond;
+            public readonly float Range;
+
+            public FlashlightStats(float damagePerSecond, float range)
+            {
+                DamagePerSecond = damagePerSecond;
+                Range = range;
+            }
         }
     }
 }

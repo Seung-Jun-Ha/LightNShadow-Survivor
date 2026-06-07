@@ -6,18 +6,18 @@ using System.Collections;
 public class TimeOfDayManager : MonoBehaviour
 {
     [Header("Volumes")]
-    public Volume nightVolume;
-    public Volume morningVolume;
+    [SerializeField] private Volume nightVolume;
+    [SerializeField] private Volume morningVolume;
 
     [Header("Lighting")]
-    public Light directionalLight;
-    public Color nightColor = new Color(0.25f, 0.45f, 0.75f);
-    public Color morningColor = new Color(1.0f, 0.95f, 0.8f);
-    public float nightIntensity = 0.3f;
-    public float morningIntensity = 1.2f;
+    [SerializeField] private Light directionalLight;
+    [SerializeField] private Color nightColor = new Color(0.25f, 0.45f, 0.75f);
+    [SerializeField] private Color morningColor = new Color(1.0f, 0.95f, 0.8f);
+    [SerializeField] private float nightIntensity = 0.3f;
+    [SerializeField] private float morningIntensity = 1.2f;
 
     [Header("Transition")]
-    public float transitionDuration = 5.0f;
+    [SerializeField] private float transitionDuration = 5.0f;
     [SerializeField, Range(0f, 1f)] private float playableNightVolumeWeight = 0.15f;
     [SerializeField] private float playableNightIntensity = 0.65f;
 
@@ -65,7 +65,7 @@ public class TimeOfDayManager : MonoBehaviour
         RenderSettings.fogColor = new Color(0.015f, 0.018f, 0.035f, 1f);
         RenderSettings.fogDensity = 0.012f;
 
-        foreach (Camera camera in FindObjectsByType<Camera>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+        foreach (Camera camera in FindObjectsByType<Camera>(FindObjectsInactive.Exclude))
         {
             camera.clearFlags = CameraClearFlags.SolidColor;
             camera.backgroundColor = new Color(0.012f, 0.014f, 0.03f, 1f);
