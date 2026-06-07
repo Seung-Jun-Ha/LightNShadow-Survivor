@@ -183,7 +183,7 @@ namespace LightNShadowSurvivor
                 panelRect.offsetMax = Vector2.zero;
 
                 Image background = upgradePanel.GetComponent<Image>();
-                background.color = new Color(0.035f, 0.025f, 0.018f, 0.42f);
+                background.color = new Color(0.035f, 0.025f, 0.018f, 0.24f);
 
                 CreateText("SkillTitle", upgradePanel.transform, "SELECT SKILL", 70, new Vector2(0.5f, 1f), new Vector2(0f, -90f), new Vector2(860f, 110f));
             }

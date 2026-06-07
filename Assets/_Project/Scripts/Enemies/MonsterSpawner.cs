@@ -40,6 +40,8 @@ namespace LightNShadowSurvivor
         private bool bossSpawned = false;
         private Coroutine spawnCoroutine;
         private List<GameObject> activeMonsters = new List<GameObject>();
+        private static readonly Dictionary<int, Material> RuntimeMaterialCache = new Dictionary<int, Material>();
+        private static Material fallbackVisibleMaterial;
 
         private void Start()
         {
@@ -143,6 +145,7 @@ namespace LightNShadowSurvivor
             activeMonsters.Add(boss);
             SetupEnemyLayer(boss);
             ConfigureBoss(boss);
+            RepairMonsterVisibility(boss);
         }
 
         private void ConfigureBoss(GameObject boss)
@@ -197,10 +200,7 @@ namespace LightNShadowSurvivor
             
             SetupEnemyLayer(spawned);
             ConfigureRegularMonster(spawned);
-            if (currentRound == 2)
-            {
-                FixRound2MonsterMaterials(spawned);
-            }
+            RepairMonsterVisibility(spawned);
         }
 
         private void SetupEnemyLayer(GameObject obj)
@@ -340,7 +340,7 @@ namespace LightNShadowSurvivor
 #endif
         }
 
-        private static void FixRound2MonsterMaterials(GameObject monster)
+        private static void RepairMonsterVisibility(GameObject monster)
         {
             if (monster == null) return;
 
@@ -350,35 +350,71 @@ namespace LightNShadowSurvivor
 
             foreach (Renderer renderer in monster.GetComponentsInChildren<Renderer>(true))
             {
+                renderer.enabled = true;
+                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+                renderer.receiveShadows = true;
+
                 Material[] sourceMaterials = renderer.sharedMaterials;
+                if (sourceMaterials == null || sourceMaterials.Length == 0)
+                {
+                    renderer.sharedMaterial = GetFallbackVisibleMaterial(shader);
+                    continue;
+                }
+
                 Material[] fixedMaterials = new Material[sourceMaterials.Length];
 
                 for (int i = 0; i < sourceMaterials.Length; i++)
                 {
                     Material source = sourceMaterials[i];
-                    Material fixedMaterial = new Material(shader)
+                    if (source != null && source.shader != null && source.shader.name != "Hidden/InternalErrorShader")
                     {
-                        name = source != null ? $"{source.name}_RuntimeURP" : "Round2Ghost_RuntimeURP"
-                    };
-
-                    if (source != null)
-                    {
-                        CopyTexture(source, fixedMaterial, "_MainTex", "_BaseMap");
-                        CopyTexture(source, fixedMaterial, "_BaseMap", "_BaseMap");
-                        CopyColor(source, fixedMaterial, "_Color", "_BaseColor");
-                        CopyColor(source, fixedMaterial, "_BaseColor", "_BaseColor");
-                        CopyColor(source, fixedMaterial, "_EmissionColor", "_EmissionColor");
-                    }
-                    else if (fixedMaterial.HasProperty("_BaseColor"))
-                    {
-                        fixedMaterial.SetColor("_BaseColor", Color.white);
+                        fixedMaterials[i] = source;
+                        continue;
                     }
 
-                    fixedMaterials[i] = fixedMaterial;
+                    fixedMaterials[i] = source != null
+                        ? GetRuntimeReplacementMaterial(source, shader)
+                        : GetFallbackVisibleMaterial(shader);
                 }
 
-                renderer.materials = fixedMaterials;
+                renderer.sharedMaterials = fixedMaterials;
             }
+        }
+
+        private static Material GetRuntimeReplacementMaterial(Material source, Shader shader)
+        {
+            int key = source.GetInstanceID();
+            if (RuntimeMaterialCache.TryGetValue(key, out Material cached) && cached != null)
+            {
+                return cached;
+            }
+
+            Material replacement = new Material(shader)
+            {
+                name = $"{source.name}_RuntimeURP"
+            };
+
+            CopyTexture(source, replacement, "_MainTex", "_BaseMap");
+            CopyTexture(source, replacement, "_BaseMap", "_BaseMap");
+            CopyColor(source, replacement, "_Color", "_BaseColor");
+            CopyColor(source, replacement, "_BaseColor", "_BaseColor");
+            CopyColor(source, replacement, "_EmissionColor", "_EmissionColor");
+
+            RuntimeMaterialCache[key] = replacement;
+            return replacement;
+        }
+
+        private static Material GetFallbackVisibleMaterial(Shader shader)
+        {
+            if (fallbackVisibleMaterial != null && fallbackVisibleMaterial.shader == shader)
+            {
+                return fallbackVisibleMaterial;
+            }
+
+            fallbackVisibleMaterial = new Material(shader) { name = "Monster_RuntimeVisible" };
+            if (fallbackVisibleMaterial.HasProperty("_BaseColor")) fallbackVisibleMaterial.SetColor("_BaseColor", Color.white);
+            else if (fallbackVisibleMaterial.HasProperty("_Color")) fallbackVisibleMaterial.SetColor("_Color", Color.white);
+            return fallbackVisibleMaterial;
         }
 
         private static void CopyTexture(Material source, Material target, string sourceProperty, string targetProperty)
