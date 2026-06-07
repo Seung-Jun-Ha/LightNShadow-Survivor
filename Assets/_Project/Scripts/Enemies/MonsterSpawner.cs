@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 #if UNITY_EDITOR
@@ -21,6 +21,7 @@ namespace LightNShadowSurvivor
         private const float BossMoveSpeed = 4.5f;
         private const float MonsterMoveSpeedMultiplier = 0.7f;
         private const float MonsterDamageMultiplier = 0.7f;
+        private const float BossDamageMultiplier = MonsterDamageMultiplier * 1.5f; // Boss deals +50% damage.
         private const float MonsterAttackRangeMultiplier = 0.5f;
         private const float MinimumSpawnRadius = 20f;
 
@@ -155,11 +156,15 @@ namespace LightNShadowSurvivor
             if (bossAI != null)
             {
                 bossAI.ConfigureMoveSpeed(BossMoveSpeed * MonsterMoveSpeedMultiplier);
-                bossAI.ConfigureDamageMultiplier(MonsterDamageMultiplier);
+                bossAI.ConfigureDamageMultiplier(BossDamageMultiplier);
                 bossAI.ConfigureAttackRangeMultiplier(MonsterAttackRangeMultiplier);
             }
             var deathHandler = boss.GetComponentInChildren<MonsterDeathHandler>();
             if (deathHandler != null) deathHandler.ConfigureExperienceReward(0f);
+
+            // Round 3: the boss model materials use the Built-in "Standard" shader,
+            // which is unsupported under URP. Rebuild them as URP Lit + magenta tint.
+            RebuildMonsterMaterials(boss, Color.magenta);
             Debug.Log($"[MonsterSpawner] Boss HP configured to {BossHealth:F0}.");
         }
 
@@ -197,7 +202,11 @@ namespace LightNShadowSurvivor
             
             SetupEnemyLayer(spawned);
             ConfigureRegularMonster(spawned);
-            if (currentRound == 2)
+            if (currentRound == 1)
+            {
+                FixRound1MonsterMaterials(spawned);
+            }
+            else if (currentRound == 2)
             {
                 FixRound2MonsterMaterials(spawned);
             }
@@ -310,6 +319,16 @@ namespace LightNShadowSurvivor
             {
                 blob.enabled = false;
             }
+
+            // Disable the third-party demo "GhostScript" (drives the dissolve/stealth
+            // effect and expects a demo UI). It must not run on gameplay monsters.
+            foreach (MonoBehaviour behaviour in monster.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                if (behaviour != null && behaviour.GetType().Name == "GhostScript")
+                {
+                    behaviour.enabled = false;
+                }
+            }
         }
 
         private void PopulateRound2CuteGhostsIfNeeded()
@@ -340,7 +359,20 @@ namespace LightNShadowSurvivor
 #endif
         }
 
+        private static void FixRound1MonsterMaterials(GameObject monster)
+        {
+            // Remove the round-1 "stealth" look: the ghost uses a semi-transparent
+            // dissolve shader. Rebuild materials as opaque URP Lit so it is fully visible.
+            RebuildMonsterMaterials(monster, null);
+        }
+
         private static void FixRound2MonsterMaterials(GameObject monster)
+        {
+            // Round-2 monsters are tinted magenta.
+            RebuildMonsterMaterials(monster, Color.magenta);
+        }
+
+        private static void RebuildMonsterMaterials(GameObject monster, Color? tint)
         {
             if (monster == null) return;
 
@@ -358,7 +390,7 @@ namespace LightNShadowSurvivor
                     Material source = sourceMaterials[i];
                     Material fixedMaterial = new Material(shader)
                     {
-                        name = source != null ? $"{source.name}_RuntimeURP" : "Round2Ghost_RuntimeURP"
+                        name = source != null ? $"{source.name}_RuntimeURP" : "Monster_RuntimeURP"
                     };
 
                     if (source != null)
@@ -374,6 +406,21 @@ namespace LightNShadowSurvivor
                         fixedMaterial.SetColor("_BaseColor", Color.white);
                     }
 
+                    // A fresh URP Lit material is opaque by default, which strips any
+                    // transparency/dissolve "stealth" effect from the source material.
+                    if (tint.HasValue)
+                    {
+                        if (fixedMaterial.HasProperty("_BaseColor")) fixedMaterial.SetColor("_BaseColor", tint.Value);
+                        if (fixedMaterial.HasProperty("_Color")) fixedMaterial.SetColor("_Color", tint.Value);
+                    }
+                    else if (fixedMaterial.HasProperty("_BaseColor"))
+                    {
+                        // Force full opacity so the round-1 ghost is no longer see-through.
+                        Color baseColor = fixedMaterial.GetColor("_BaseColor");
+                        baseColor.a = 1f;
+                        fixedMaterial.SetColor("_BaseColor", baseColor);
+                    }
+
                     fixedMaterials[i] = fixedMaterial;
                 }
 
@@ -381,7 +428,7 @@ namespace LightNShadowSurvivor
             }
         }
 
-        private static void CopyTexture(Material source, Material target, string sourceProperty, string targetProperty)
+private static void CopyTexture(Material source, Material target, string sourceProperty, string targetProperty)
         {
             if (!source.HasProperty(sourceProperty) || !target.HasProperty(targetProperty)) return;
 

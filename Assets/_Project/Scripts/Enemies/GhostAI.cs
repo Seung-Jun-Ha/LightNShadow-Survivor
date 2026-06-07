@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.AI;
 
 namespace LightNShadowSurvivor
@@ -182,7 +182,8 @@ namespace LightNShadowSurvivor
 
         public void ConfigureDamageMultiplier(float multiplier)
         {
-            damageMultiplier = Mathf.Clamp01(multiplier);
+            // Allow values above 1 so bosses can receive a damage boost (e.g. +50%).
+            damageMultiplier = Mathf.Clamp(multiplier, 0f, 5f);
         }
 
         public void ConfigureAttackRangeMultiplier(float multiplier)

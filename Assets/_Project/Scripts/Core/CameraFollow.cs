@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 namespace LightNShadowSurvivor
@@ -44,6 +45,35 @@ namespace LightNShadowSurvivor
         {
             localOffset = newLocalOffset;
             pitchOffset = newPitch;
+        }
+
+        /// <summary>
+        /// Smoothly animates the camera's local offset and pitch over time so it
+        /// pulls back from the target to reveal the whole map (used in the ending).
+        /// </summary>
+        public void ZoomOutCinematic(Vector3 targetOffset, float targetPitch, float duration)
+        {
+            StopAllCoroutines();
+            StartCoroutine(ZoomOutRoutine(targetOffset, targetPitch, Mathf.Max(0.01f, duration)));
+        }
+
+        private IEnumerator ZoomOutRoutine(Vector3 targetOffset, float targetPitch, float duration)
+        {
+            Vector3 startOffset = localOffset;
+            float startPitch = pitchOffset;
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float k = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
+                localOffset = Vector3.Lerp(startOffset, targetOffset, k);
+                pitchOffset = Mathf.Lerp(startPitch, targetPitch, k);
+                yield return null;
+            }
+
+            localOffset = targetOffset;
+            pitchOffset = targetPitch;
         }
     }
 }

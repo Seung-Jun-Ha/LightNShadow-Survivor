@@ -10,7 +10,7 @@ namespace LightNShadowSurvivor
         [Header("Round Settings (Seconds)")]
         [SerializeField] private float round1Duration = 60f;
         [SerializeField] private float round2Duration = 60f;
-        [SerializeField] private float round3Duration = 120f;
+        [SerializeField] private float round3Duration = 60f;
 
         private int currentRound = 1;
         private int startedRound;
@@ -111,13 +111,6 @@ namespace LightNShadowSurvivor
             float delta = Time.deltaTime;
             elapsedTime += delta;
 
-            if (currentRound == 3)
-            {
-                timer = 0f;
-                OnRoundTimeChanged?.Invoke(timer, elapsedTime);
-                return;
-            }
-
             timer = Mathf.Max(0f, timer - delta);
             OnRoundTimeChanged?.Invoke(timer, elapsedTime);
 
@@ -134,26 +127,27 @@ namespace LightNShadowSurvivor
             isTimerRunning = false;
             OnRoundEnded?.Invoke(currentRound);
 
-            if (AudioManager.Instance != null && currentRound < 3)
-            {
-                AudioManager.Instance.PlayRoundClearSFX();
-            }
-
             var spawner = FindAnyObjectByType<MonsterSpawner>();
             if (spawner != null) spawner.StopAndClearMonsters();
-
-            RestorePlayerForNextRound();
 
             if (GameManager.Instance == null) return;
 
             if (currentRound < 3)
             {
+                // Rounds 1 & 2: surviving the full duration clears the round and advances.
+                if (AudioManager.Instance != null)
+                {
+                    AudioManager.Instance.PlayRoundClearSFX();
+                }
+
+                RestorePlayerForNextRound();
                 currentRound = Mathf.Clamp(currentRound + 1, 1, 3);
                 GameManager.Instance.ShowRoundIntroThenStart(currentRound);
             }
             else
             {
-                GameManager.Instance.TriggerEnding();
+                // Round 3: the boss was not defeated within the time limit -> Game Over.
+                GameManager.Instance.TriggerGameOver();
             }
         }
 

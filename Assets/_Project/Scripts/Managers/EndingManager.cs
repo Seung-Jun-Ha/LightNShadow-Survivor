@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 using System.Collections;
 
 namespace LightNShadowSurvivor
@@ -46,7 +48,7 @@ namespace LightNShadowSurvivor
         {
             Debug.Log("Starting Sunrise Ending...");
 
-            // 1. Disable Player Movement/Aiming
+            // 1. Freeze the player completely (movement, aiming, attacking, physics, animation).
             var player = GameObject.Find("Player_Main");
             if (player != null)
             {
@@ -54,6 +56,31 @@ namespace LightNShadowSurvivor
                 if (player.TryGetComponent(out PlayerAim pa)) pa.enabled = false;
                 var fla = player.GetComponentInChildren<FlashLightAttack>();
                 if (fla != null) fla.enabled = false;
+
+                if (player.TryGetComponent(out Rigidbody rb))
+                {
+                    rb.linearVelocity = Vector3.zero;
+                    rb.angularVelocity = Vector3.zero;
+                }
+
+                var playerAnimator = player.GetComponentInChildren<Animator>();
+                if (playerAnimator != null)
+                {
+                    foreach (var parameter in playerAnimator.parameters)
+                    {
+                        if (parameter.type == AnimatorControllerParameterType.Float && parameter.name == "MoveSpeed")
+                        {
+                            playerAnimator.SetFloat("MoveSpeed", 0f);
+                        }
+                    }
+                }
+            }
+
+            // 1b. Cinematic camera pull-back to reveal the whole map during the sunrise.
+            var cameraFollow = FindAnyObjectByType<CameraFollow>();
+            if (cameraFollow != null)
+            {
+                cameraFollow.ZoomOutCinematic(new Vector3(0f, 28f, -18f), 60f, sunriseDuration);
             }
 
             // 2. Stop Spawning
@@ -96,7 +123,9 @@ namespace LightNShadowSurvivor
                 yield return null;
             }
 
-            // 5. Show Result
+            // 5. Show the "GAME CLEAR" title, then the results panel.
+            yield return StartCoroutine(ShowGameClearText());
+
             if (resultUI != null)
             {
                 resultUI.SetActive(true);
@@ -110,6 +139,48 @@ namespace LightNShadowSurvivor
             
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
+        }
+
+        private IEnumerator ShowGameClearText()
+        {
+            GameObject canvasObject = new GameObject("RuntimeGameClearCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+            Canvas canvas = canvasObject.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 200;
+
+            CanvasScaler scaler = canvasObject.GetComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.matchWidthOrHeight = 0.5f;
+
+            GameObject textObject = new GameObject("GameClearText", typeof(RectTransform), typeof(TextMeshProUGUI));
+            textObject.transform.SetParent(canvasObject.transform, false);
+            RectTransform textRect = textObject.GetComponent<RectTransform>();
+            textRect.anchorMin = new Vector2(0.5f, 0.5f);
+            textRect.anchorMax = new Vector2(0.5f, 0.5f);
+            textRect.anchoredPosition = new Vector2(0f, 120f);
+            textRect.sizeDelta = new Vector2(1400f, 300f);
+
+            TextMeshProUGUI text = textObject.GetComponent<TextMeshProUGUI>();
+            text.text = "GAME CLEAR";
+            text.fontSize = 140f;
+            text.fontStyle = FontStyles.Bold;
+            text.alignment = TextAlignmentOptions.Center;
+            text.color = new Color(1f, 0.95f, 0.7f, 0f);
+
+            // Fade the title in.
+            float elapsed = 0f;
+            const float fadeDuration = 1.5f;
+            while (elapsed < fadeDuration)
+            {
+                elapsed += Time.deltaTime;
+                Color color = text.color;
+                color.a = Mathf.Clamp01(elapsed / fadeDuration);
+                text.color = color;
+                yield return null;
+            }
+
+            yield return new WaitForSeconds(1.5f);
         }
     }
 }
