@@ -375,16 +375,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2eab652ec8de6664d9822cbd3f7b55a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LightNShadowSurvivor.BossBase
-  maxHealth: 1700
+  maxHealth: 30
   shieldHealth: 0
   reactionType: 7
+  experienceReward: 25
+  grantExperienceDirectly: 1
+  enableBehavior: 1
   vulnerabilityTime: 5
   shieldVisual: {fileID: 0}
   dashCooldown: 8
-  dashSpeedMultiplier: 3
-  dashDuration: 1.5
+  dashSpeedMultiplier: 2.2
+  dashDuration: 1
   minionPrefab: {fileID: 0}
   minionSpawnInterval: 10
+  slamRange: 3.5
+  slamCooldown: 4
+  slamDamage: 18
+  slamWindup: 0.55
+  slamImpactRadius: 3
+  slamAnimationState: Monster_anim|Atack_3
 --- !u!114 &8427222529634035871
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -398,6 +407,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LightNShadowSurvivor.LightDamageReceiver
   hitVfxPrefab: {fileID: 4234545127880938927, guid: 77466f25b2199fc4eb7a9da65a5184d2, type: 3}
+  vfxInterval: 0.1
+  hitEffectDuration: 0.15
 --- !u!195 &5652866367663263199
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -408,7 +419,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.7
-  m_Speed: 2.8
+  m_Speed: 3.15
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 240
@@ -435,7 +446,9 @@ MonoBehaviour:
   attackRange: 1.5
   attackCooldown: 2
   damageAmount: 10
-  moveSpeed: 3.5
+  moveSpeed: 3.15
+  damageMultiplier: 1.05
+  attackRangeMultiplier: 0.5
   floatHeight: 0.1
   floatAmplitude: 0.1
   floatFrequency: 1.5
@@ -455,7 +468,7 @@ MonoBehaviour:
   dissolveParameter: _Dissolve
   dissolveMaterialBase: {fileID: 0}
   xpOrbPrefab: {fileID: 5274014065625216723, guid: 9272f1310c5262f4c8250bb7ba8b4221, type: 3}
-  xpValue: 500
+  xpValue: 0
   deathParticlePrefab: {fileID: 4234545127880938927, guid: 77466f25b2199fc4eb7a9da65a5184d2, type: 3}
   itemPrefabs:
   - {fileID: 3302506064909966716, guid: 997831629a93ade408a67b3778fd80b5, type: 3}
