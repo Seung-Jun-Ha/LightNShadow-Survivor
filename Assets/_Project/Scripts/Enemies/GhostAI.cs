@@ -154,7 +154,7 @@ namespace LightNShadowSurvivor
                 lastAttackTime = Time.time;
                 if (animator != null)
                 {
-                    animator.CrossFade(AttackState, 0.1f);
+                    SafeCrossFade(AttackState, 0.1f);
                 }
                 
                 if (playerHealth != null)
@@ -239,13 +239,20 @@ namespace LightNShadowSurvivor
                 var state = animator.GetCurrentAnimatorStateInfo(0);
                 if (!state.IsName("attack_shift") && !state.IsName("move"))
                 {
-                    animator.CrossFade(MoveState, 0.1f);
+                    SafeCrossFade(MoveState, 0.1f);
                 }
             }
             else if (agent.isStopped && !animator.GetCurrentAnimatorStateInfo(0).IsName("attack_shift"))
             {
-                animator.CrossFade(IdleState, 0.1f);
+                SafeCrossFade(IdleState, 0.1f);
             }
+        }
+
+        private void SafeCrossFade(int stateHash, float transitionDuration)
+        {
+            if (animator == null || !animator.HasState(0, stateHash)) return;
+
+            animator.CrossFade(stateHash, transitionDuration);
         }
 
         private float GetEffectiveAttackRange()
@@ -254,4 +261,3 @@ namespace LightNShadowSurvivor
         }
     }
 }
-

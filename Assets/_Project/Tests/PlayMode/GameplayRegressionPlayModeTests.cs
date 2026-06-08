@@ -4,6 +4,7 @@ using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
+using UnityEngine.UI;
 
 namespace LightNShadowSurvivor.Tests
 {
@@ -21,6 +22,13 @@ namespace LightNShadowSurvivor.Tests
                 {
                     UnityEngine.Object.DestroyImmediate(obj);
                 }
+
+                if (obj.name == "RuntimeSkillSceneCanvas" ||
+                    obj.name == "RuntimeUpgradeUIController" ||
+                    obj.name == "RuntimeEventSystem")
+                {
+                    UnityEngine.Object.DestroyImmediate(obj);
+                }
             }
 
             ResetSingleton("LightNShadowSurvivor.GameManager");
@@ -28,6 +36,7 @@ namespace LightNShadowSurvivor.Tests
             ResetSingleton("LightNShadowSurvivor.PlayerExperience");
             ResetSingleton("LightNShadowSurvivor.GameStatsManager");
             ResetSingleton("LightNShadowSurvivor.PlayerController");
+            ResetSingleton("LightNShadowSurvivor.UpgradeManager");
         }
 
         [UnityTest]
@@ -181,6 +190,54 @@ namespace LightNShadowSurvivor.Tests
             Assert.AreEqual(5f, GetFloatProperty(playerExperience, "CurrentXP"));
         }
 
+        [UnityTest]
+        public IEnumerator SelectingUpgradeCardHidesRuntimeUpgradePanel()
+        {
+            Component upgradeManager = new GameObject("GameplayRegressionTest_UpgradeManager").AddComponent(FindType("LightNShadowSurvivor.UpgradeManager"));
+            ScriptableObject upgrade = ScriptableObject.CreateInstance(FindType("LightNShadowSurvivor.UpgradeData"));
+            SetFieldValue(upgradeManager, "autoPopulateUpgrades", false, BindingFlags.Instance | BindingFlags.NonPublic);
+            SetFieldValue(upgradeManager, "allUpgrades", CreateUpgradeList(upgrade), BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Component controller = new GameObject("GameplayRegressionTest_UpgradeUIController").AddComponent(FindType("LightNShadowSurvivor.UpgradeUIController"));
+            Invoke(controller, "ShowForCurrentUpgrade");
+            yield return null;
+
+            GameObject panel = GameObject.Find("SteampunkSkillPanel");
+            Assert.NotNull(panel);
+            Assert.IsTrue(panel.activeInHierarchy);
+            Assert.AreEqual(0f, Time.timeScale);
+
+            Component card = FindRuntimeComponent("LightNShadowSurvivor.UpgradeCardUI");
+            Assert.NotNull(card);
+            Button button = (Button)GetFieldValue(card, "selectButton", BindingFlags.Instance | BindingFlags.Public);
+            Assert.NotNull(button);
+
+            button.onClick.Invoke();
+            yield return null;
+
+            Assert.IsTrue(panel == null || !panel.activeInHierarchy);
+            Assert.AreEqual(1f, Time.timeScale);
+
+            UnityEngine.Object.DestroyImmediate(upgrade);
+        }
+
+        [Test]
+        public void MonsterVisibilityFallbackIsAddedWhenOnlyShadowRendererExists()
+        {
+            GameObject monster = new GameObject("GameplayRegressionTest_ShadowOnlyMonster");
+            GameObject shadow = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            shadow.name = "GameplayRegressionTest_ShadowRenderer";
+            shadow.transform.SetParent(monster.transform, false);
+            shadow.AddComponent(FindType("LightNShadowSurvivor.BlobShadow"));
+
+            InvokeStatic(
+                "LightNShadowSurvivor.MonsterSpawner",
+                "EnsureMonsterBodyVisible",
+                new object[] { monster, Color.white });
+
+            Assert.NotNull(monster.transform.Find("RuntimeVisibleMonsterBody"));
+        }
+
         private static Component CreateGameManager()
         {
             Component gameManager = new GameObject("GameplayRegressionTest_GameManager").AddComponent(FindType("LightNShadowSurvivor.GameManager"));
@@ -228,11 +285,47 @@ namespace LightNShadowSurvivor.Tests
             method.Invoke(component, new[] { argument });
         }
 
+        private static void InvokeStatic(string typeName, string methodName, object[] arguments)
+        {
+            Type type = FindType(typeName);
+            MethodInfo method = type.GetMethod(methodName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            Assert.NotNull(method);
+            method.Invoke(null, arguments);
+        }
+
         private static void SetFieldValue(object target, string fieldName, object value, BindingFlags bindingFlags)
         {
             FieldInfo field = target.GetType().GetField(fieldName, bindingFlags);
             Assert.NotNull(field);
             field.SetValue(target, value);
+        }
+
+        private static object GetFieldValue(object target, string fieldName, BindingFlags bindingFlags)
+        {
+            FieldInfo field = target.GetType().GetField(fieldName, bindingFlags);
+            Assert.NotNull(field);
+            return field.GetValue(target);
+        }
+
+        private static Component FindRuntimeComponent(string typeName)
+        {
+            Type type = FindType(typeName);
+            foreach (GameObject obj in UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include))
+            {
+                Component component = obj.GetComponent(type);
+                if (component != null) return component;
+            }
+
+            return null;
+        }
+
+        private static object CreateUpgradeList(ScriptableObject upgrade)
+        {
+            Type upgradeDataType = FindType("LightNShadowSurvivor.UpgradeData");
+            Type listType = typeof(System.Collections.Generic.List<>).MakeGenericType(upgradeDataType);
+            object list = Activator.CreateInstance(listType);
+            listType.GetMethod("Add").Invoke(list, new object[] { upgrade });
+            return list;
         }
 
         private static void ResetSingleton(string typeName)

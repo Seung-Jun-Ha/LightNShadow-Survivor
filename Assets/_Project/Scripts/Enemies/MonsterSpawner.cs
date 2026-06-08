@@ -24,6 +24,7 @@ namespace LightNShadowSurvivor
         private const float BossDamageMultiplier = MonsterDamageMultiplier * 1.5f; // Boss deals +50% damage.
         private const float MonsterAttackRangeMultiplier = 0.5f;
         private const float MinimumSpawnRadius = 20f;
+        private const string RuntimeVisibleBodyName = "RuntimeVisibleMonsterBody";
 
         [Header("Spawn Settings")]
         [SerializeField] private List<GameObject> round1Monsters;
@@ -143,13 +144,19 @@ namespace LightNShadowSurvivor
             GameObject boss = Instantiate(bossPrefab, spawnPos, Quaternion.identity);
             activeMonsters.Add(boss);
             SetupEnemyLayer(boss);
+            RebuildMonsterMaterials(boss, Color.magenta);
+            EnsureBossVisible(boss);
             ConfigureBoss(boss);
         }
 
         private void ConfigureBoss(GameObject boss)
         {
             var bossBase = boss.GetComponentInChildren<BossBase>();
-            if (bossBase == null) return;
+            if (bossBase == null)
+            {
+                EnsureBossVisible(boss);
+                return;
+            }
 
             bossBase.ConfigureBoss(BossHealth);
             GhostAI bossAI = boss.GetComponentInChildren<GhostAI>();
@@ -165,6 +172,7 @@ namespace LightNShadowSurvivor
             // Round 3: the boss model materials use the Built-in "Standard" shader,
             // which is unsupported under URP. Rebuild them as URP Lit + magenta tint.
             RebuildMonsterMaterials(boss, Color.magenta);
+            EnsureBossVisible(boss);
             Debug.Log($"[MonsterSpawner] Boss HP configured to {BossHealth:F0}.");
         }
 
@@ -205,10 +213,12 @@ namespace LightNShadowSurvivor
             if (currentRound == 1)
             {
                 FixRound1MonsterMaterials(spawned);
+                EnsureMonsterBodyVisible(spawned, Color.white);
             }
             else if (currentRound == 2)
             {
                 FixRound2MonsterMaterials(spawned);
+                EnsureMonsterBodyVisible(spawned, Color.magenta);
             }
         }
 
@@ -382,6 +392,8 @@ namespace LightNShadowSurvivor
 
             foreach (Renderer renderer in monster.GetComponentsInChildren<Renderer>(true))
             {
+                if (IsShadowRenderer(renderer)) continue;
+
                 Material[] sourceMaterials = renderer.sharedMaterials;
                 Material[] fixedMaterials = new Material[sourceMaterials.Length];
 
@@ -428,7 +440,113 @@ namespace LightNShadowSurvivor
             }
         }
 
-private static void CopyTexture(Material source, Material target, string sourceProperty, string targetProperty)
+        public static void EnsureMonsterBodyVisible(GameObject monster, Color fallbackColor)
+        {
+            EnsureMonsterBodyVisible(monster, fallbackColor, false);
+        }
+
+        public static void EnsureBossVisible(GameObject boss)
+        {
+            if (boss == null) return;
+
+            RebuildMonsterMaterials(boss, Color.magenta);
+            EnsureMonsterBodyVisible(boss, Color.magenta, true);
+        }
+
+        private static void EnsureMonsterBodyVisible(GameObject monster, Color fallbackColor, bool forceFallback)
+        {
+            if (monster == null) return;
+
+            bool hasVisibleBodyRenderer = false;
+            foreach (Renderer renderer in monster.GetComponentsInChildren<Renderer>(true))
+            {
+                if (renderer == null || IsShadowRenderer(renderer)) continue;
+
+                SetHierarchyActive(renderer.transform, monster.transform);
+                renderer.enabled = true;
+                renderer.forceRenderingOff = false;
+                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+                renderer.receiveShadows = true;
+                hasVisibleBodyRenderer = true;
+            }
+
+            if (hasVisibleBodyRenderer && !forceFallback) return;
+            if (monster.transform.Find(RuntimeVisibleBodyName) != null) return;
+
+            GameObject fallback = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            fallback.name = RuntimeVisibleBodyName;
+            fallback.transform.SetParent(monster.transform, false);
+            fallback.transform.localPosition = forceFallback ? new Vector3(0f, 1.6f, 0f) : new Vector3(0f, 1f, 0f);
+            fallback.transform.localRotation = Quaternion.identity;
+            fallback.transform.localScale = forceFallback ? new Vector3(2.2f, 2.8f, 2.2f) : new Vector3(1.2f, 1.2f, 1.2f);
+
+            Collider collider = fallback.GetComponent<Collider>();
+            if (collider != null) DestroyRuntimeObject(collider);
+
+            Renderer fallbackRenderer = fallback.GetComponent<Renderer>();
+            if (fallbackRenderer != null)
+            {
+                Shader shader = Shader.Find("Universal Render Pipeline/Lit");
+                if (shader == null) shader = Shader.Find("Standard");
+                if (shader != null)
+                {
+                    Material material = new Material(shader)
+                    {
+                        name = "RuntimeVisibleMonsterBody_Material"
+                    };
+                    SetMaterialColor(material, fallbackColor);
+                    fallbackRenderer.material = material;
+                }
+            }
+
+            Debug.LogWarning($"[MonsterSpawner] Added fallback visible body to '{monster.name}' because {(forceFallback ? "boss visibility must be guaranteed" : "no non-shadow renderer was visible")}.");
+        }
+
+        private static void SetHierarchyActive(Transform current, Transform stopAt)
+        {
+            while (current != null && current != stopAt)
+            {
+                if (!current.gameObject.activeSelf)
+                {
+                    current.gameObject.SetActive(true);
+                }
+
+                current = current.parent;
+            }
+        }
+
+        private static bool IsShadowRenderer(Renderer renderer)
+        {
+            if (renderer == null) return false;
+            if (renderer.GetComponentInParent<BlobShadow>(true) != null) return true;
+            return renderer.name.IndexOf("shadow", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || renderer.gameObject.name.IndexOf("shadow", System.StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private static void SetMaterialColor(Material material, Color color)
+        {
+            if (material == null) return;
+
+            color.a = 1f;
+            if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", color);
+            if (material.HasProperty("_Color")) material.SetColor("_Color", color);
+        }
+
+        private static void DestroyRuntimeObject(Object target)
+        {
+            if (target == null) return;
+
+            if (Application.isPlaying)
+            {
+                Destroy(target);
+            }
+            else
+            {
+                DestroyImmediate(target);
+            }
+        }
+
+        private static void CopyTexture(Material source, Material target, string sourceProperty, string targetProperty)
         {
             if (!source.HasProperty(sourceProperty) || !target.HasProperty(targetProperty)) return;
 
@@ -477,4 +595,3 @@ private static void CopyTexture(Material source, Material target, string sourceP
         }
     }
 }
-

@@ -110,6 +110,8 @@ namespace LightNShadowSurvivor
 
         private static void HideOpenUpgradeUI()
         {
+            UpgradeUIController.HideAllOpenUpgradeUI();
+
             UpgradeUIController[] controllers = FindObjectsByType<UpgradeUIController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             foreach (UpgradeUIController controller in controllers)
             {
@@ -153,6 +155,7 @@ namespace LightNShadowSurvivor
 
         public void ResumeAfterUpgradeSelection()
         {
+            HideOpenUpgradeUI();
             Time.timeScale = 1f;
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
@@ -176,6 +179,10 @@ namespace LightNShadowSurvivor
                     // If it was a mid-round level up
                     GameManager.Instance.StartRound();
                 }
+            }
+            else
+            {
+                GameManager.Instance.StartRound();
             }
         }
     }

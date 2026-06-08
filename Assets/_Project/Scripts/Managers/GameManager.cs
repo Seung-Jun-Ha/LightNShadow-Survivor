@@ -21,6 +21,7 @@ namespace LightNShadowSurvivor
         
         private GameState currentState;
         public GameState CurrentState => currentState;
+        private int stateSceneSyncVersion;
 
         private void Awake()
         {
@@ -71,7 +72,7 @@ namespace LightNShadowSurvivor
         {
             if (currentState == newState && newState != GameState.Round)
             {
-                StartCoroutine(SyncStateSceneRoutine(newState));
+                StartCoroutine(SyncStateSceneRoutine(newState, ++stateSceneSyncVersion));
                 return;
             }
             
@@ -95,6 +96,7 @@ namespace LightNShadowSurvivor
                     Cursor.lockState = CursorLockMode.None;
                     break;
                 case GameState.Round:
+                    UpgradeUIController.HideAllOpenUpgradeUI();
                     if (previousState == GameState.MainMenu || previousState == GameState.GameOver || previousState == GameState.Ending)
                     {
                         if (GameStatsManager.Instance != null)
@@ -114,11 +116,13 @@ namespace LightNShadowSurvivor
                     EnsureUpgradeUIController();
                     break;
                 case GameState.Ending:
+                    UpgradeUIController.HideAllOpenUpgradeUI();
                     Time.timeScale = 1f;
                     Cursor.visible = true;
                     Cursor.lockState = CursorLockMode.None;
                     break;
                 case GameState.GameOver:
+                    UpgradeUIController.HideAllOpenUpgradeUI();
                     Time.timeScale = 0f;
                     Cursor.visible = true;
                     Cursor.lockState = CursorLockMode.None;
@@ -126,7 +130,7 @@ namespace LightNShadowSurvivor
             }
 
             OnStateChanged?.Invoke(newState);
-            StartCoroutine(SyncStateSceneRoutine(newState));
+            StartCoroutine(SyncStateSceneRoutine(newState, ++stateSceneSyncVersion));
         }
 
         public void StartRound() => ChangeState(GameState.Round);
@@ -204,11 +208,17 @@ namespace LightNShadowSurvivor
             controller.ShowForCurrentUpgrade();
         }
 
-        private IEnumerator SyncStateSceneRoutine(GameState state)
+        private IEnumerator SyncStateSceneRoutine(GameState state, int version)
         {
             if (state == GameState.Upgrade)
             {
                 yield return LoadSceneIfNeeded(upgradeSceneName);
+                if (version != stateSceneSyncVersion || currentState != GameState.Upgrade)
+                {
+                    yield return UnloadSceneIfLoaded(upgradeSceneName);
+                    yield break;
+                }
+
                 yield return UnloadSceneIfLoaded(gameOverSceneName);
                 yield break;
             }
@@ -216,11 +226,18 @@ namespace LightNShadowSurvivor
             if (state == GameState.GameOver)
             {
                 yield return LoadSceneIfNeeded(gameOverSceneName);
+                if (version != stateSceneSyncVersion || currentState != GameState.GameOver)
+                {
+                    yield return UnloadSceneIfLoaded(gameOverSceneName);
+                    yield break;
+                }
+
                 yield return UnloadSceneIfLoaded(upgradeSceneName);
                 yield break;
             }
 
             yield return UnloadSceneIfLoaded(upgradeSceneName);
+            UpgradeUIController.HideAllOpenUpgradeUI();
             yield return UnloadSceneIfLoaded(gameOverSceneName);
         }
 

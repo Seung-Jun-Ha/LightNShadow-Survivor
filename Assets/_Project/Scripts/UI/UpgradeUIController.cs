@@ -21,6 +21,7 @@ namespace LightNShadowSurvivor
 
         private List<GameObject> spawnedCards = new List<GameObject>();
         private bool isShowing;
+        private bool isResolvingSelection;
         private Canvas runtimeCanvas;
 
         private void Start()
@@ -47,11 +48,13 @@ namespace LightNShadowSurvivor
         {
             if (state == GameState.Upgrade)
             {
+                isResolvingSelection = false;
                 ShowForCurrentUpgrade();
             }
             else
             {
                 isShowing = false;
+                isResolvingSelection = false;
                 if (upgradePanel != null) upgradePanel.SetActive(false);
                 ClearCards();
             }
@@ -59,7 +62,7 @@ namespace LightNShadowSurvivor
 
         private void ShowUpgradeSelection()
         {
-            if (isShowing) return;
+            if (isShowing || isResolvingSelection) return;
             EnsureUpgradeUI();
             EnsureEventSystem();
 
@@ -87,7 +90,7 @@ namespace LightNShadowSurvivor
             if (UpgradeManager.Instance == null)
             {
                 Debug.LogWarning("[UpgradeUIController] UpgradeManager instance was not found.");
-                upgradePanel.SetActive(false);
+                HideUpgradeSelection();
                 return;
             }
 
@@ -95,7 +98,7 @@ namespace LightNShadowSurvivor
             if (upgrades.Count == 0)
             {
                 Debug.LogWarning("[UpgradeUIController] No upgrades available. Resuming round.");
-                isShowing = false;
+                HideUpgradeSelection();
                 UpgradeManager.Instance.ResumeAfterUpgradeSelection();
                 return;
             }
@@ -108,11 +111,7 @@ namespace LightNShadowSurvivor
 
                 if (cardObj.TryGetComponent<UpgradeCardUI>(out var cardUI))
                 {
-                    cardUI.Setup(data, selectedData =>
-                    {
-                        HideUpgradeSelection();
-                        UpgradeManager.Instance.ApplyUpgrade(selectedData);
-                    });
+                    cardUI.Setup(data, SelectUpgrade);
                 }
                 else
                 {
@@ -134,7 +133,7 @@ namespace LightNShadowSurvivor
 
             if (runtimeCanvas != null)
             {
-                Destroy(runtimeCanvas.gameObject);
+                DestroyRuntimeObject(runtimeCanvas.gameObject);
                 runtimeCanvas = null;
                 upgradePanel = null;
                 cardContainer = null;
@@ -143,6 +142,36 @@ namespace LightNShadowSurvivor
 
             TimeOfDayManager timeOfDay = FindAnyObjectByType<TimeOfDayManager>();
             if (timeOfDay != null) timeOfDay.RestorePlayableLighting();
+        }
+
+        public static void HideAllOpenUpgradeUI()
+        {
+            foreach (UpgradeUIController controller in FindObjectsByType<UpgradeUIController>(FindObjectsInactive.Include))
+            {
+                if (controller != null) controller.HideUpgradeSelection();
+            }
+
+            DestroyNamedRuntimeObject("RuntimeSkillSceneCanvas");
+            DestroyNamedRuntimeObject("RuntimeUpgradeUIController");
+            DestroyNamedRuntimeObject("SteampunkSkillPanel");
+        }
+
+        private void SelectUpgrade(UpgradeData selectedData)
+        {
+            if (isResolvingSelection) return;
+
+            isResolvingSelection = true;
+            HideUpgradeSelection();
+
+            if (UpgradeManager.Instance != null)
+            {
+                UpgradeManager.Instance.ApplyUpgrade(selectedData);
+            }
+            else
+            {
+                Time.timeScale = 1f;
+                Debug.LogWarning("[UpgradeUIController] UpgradeManager instance was not found while applying selected upgrade.");
+            }
         }
 
         private void EnsureUpgradeUI()
@@ -402,9 +431,29 @@ namespace LightNShadowSurvivor
             for (int i = spawnedCards.Count - 1; i >= 0; i--)
             {
                 var card = spawnedCards[i];
-                if (card != null) Destroy(card);
+                if (card != null) DestroyRuntimeObject(card);
             }
             spawnedCards.Clear();
+        }
+
+        private static void DestroyRuntimeObject(Object target)
+        {
+            if (target == null) return;
+
+            if (Application.isPlaying)
+            {
+                Destroy(target);
+            }
+            else
+            {
+                DestroyImmediate(target);
+            }
+        }
+
+        private static void DestroyNamedRuntimeObject(string objectName)
+        {
+            GameObject obj = GameObject.Find(objectName);
+            if (obj != null) DestroyRuntimeObject(obj);
         }
     }
 }
