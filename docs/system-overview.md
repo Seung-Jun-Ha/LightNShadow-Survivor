@@ -85,6 +85,17 @@ UI는 메뉴, HUD, 업그레이드, 게임 오버, 결과 화면으로 나뉩니
 
 시간대와 엔딩 연출은 `TimeOfDayManager`와 `EndingManager`가 담당합니다. 오디오는 `AudioManager`, 타격 효과는 `Prefabs/VFX` 아래의 프리팹과 전투 스크립트가 연결합니다.
 
+## 에셋 사용
+
+프로젝트 전용 게임 자산은 `Assets/_Project` 아래에 모여 있습니다. 외부 에셋은 별도 폴더에 보관해 원본 출처와 프로젝트 적용 범위를 구분합니다.
+
+- 환경/자연물: `Assets/ThirdParty/Pure Poly`, `Assets/ThirdParty/Darth_Artisan`, `Assets/ThirdParty/Low Poly Stones`
+- 적 캐릭터: `Assets/ThirdParty/GhostCharacter_Free`, `Assets/ThirdParty/Monster_Ghosts_FREE`, `Assets/Monster_Orc (Troll)`
+- 손전등: `Assets/ThirdParty/Free-FlashLight`
+- UI: `Assets/ThirdParty/Gentleland/SteampunkUI`, `Assets/_Project/Prefabs/UI`
+- 음악: `Assets/OccaSoftware/Fantasy Music Pack`
+- 프로젝트 전용 데이터와 프리팹: `Assets/_Project/Data`, `Assets/_Project/Prefabs`
+
 ## 테스트 시스템
 
 테스트는 `Assets/_Project/Tests`에 있습니다.

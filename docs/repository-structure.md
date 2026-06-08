@@ -11,6 +11,14 @@
 - `docs/`: 프로젝트 설명 문서
 - `README.md`: 저장소 소개와 실행 안내
 
+## Unity 버전
+
+- Unity 6 `6000.4.7f1`
+- 버전 기준 파일: `ProjectSettings/ProjectVersion.txt`
+- 패키지 기준 파일: `Packages/manifest.json`
+
+주요 사용 패키지는 URP, Input System, AI Navigation, Unity UI, Unity Test Framework입니다.
+
 ## 핵심 구현 경로
 
 게임 본문은 `Assets/_Project`를 중심으로 구성됩니다.
@@ -106,6 +114,32 @@ Assets/_Project
 - `Prefabs/UI`: 업그레이드 카드 등 UI 프리팹
 - `Prefabs/VFX`: 빛 타격 효과
 - `Data/Upgrades`: 이동, 체력, 빛 공격, 빛 범위, 보조 공격 업그레이드 데이터
+
+## Assets
+
+### 프로젝트 전용 에셋
+
+- `Assets/_Project/Scenes`: 게임 플레이와 UI 씬
+- `Assets/_Project/Prefabs`: 게임에서 직접 사용하는 적, 아이템, UI, VFX 프리팹
+- `Assets/_Project/Data/Upgrades`: 업그레이드 ScriptableObject
+- `Assets/_Project/Materials`: 플레이어, 적, 지형, 이펙트용 머티리얼
+- `Assets/_Project/Textures`: 프로젝트 전용 텍스처
+- `Assets/_Project/Settings`: 물리 재질과 렌더링 관련 설정
+
+### 외부 에셋
+
+- `Assets/ThirdParty/GhostCharacter_Free`: 유령 캐릭터 모델, 머티리얼, 프리팹
+- `Assets/ThirdParty/Monster_Ghosts_FREE`: 추가 유령 몬스터 에셋
+- `Assets/ThirdParty/Free-FlashLight`: 손전등 모델/머티리얼
+- `Assets/ThirdParty/Pure Poly/Free Low Poly Nature Pack`: 숲, 지형, 자연물 에셋
+- `Assets/ThirdParty/Darth_Artisan/Free_Trees`: 나무 에셋
+- `Assets/ThirdParty/Low Poly Stones`: 돌/경계 오브젝트 에셋
+- `Assets/ThirdParty/Gentleland/SteampunkUI`: UI 그래픽, 프리팹, 폰트 리소스
+- `Assets/ThirdParty/Mini Simple Characters Demo`: 캐릭터 모델 참고 에셋
+- `Assets/OccaSoftware/Fantasy Music Pack`: BGM 오디오 파일
+- `Assets/Monster_Orc (Troll)`: Orc/Troll 모델, 머티리얼, 텍스처, 애니메이터, 프리팹
+
+외부 에셋의 라이선스와 원본 문서는 각 에셋 폴더 안의 문서와 라이선스 파일을 우선 확인합니다.
 
 ## Tests
 

@@ -5,10 +5,23 @@
 ## Unity에서 열기
 
 1. Unity Hub를 실행합니다.
-2. `LightNShadow-Survivor` 폴더를 프로젝트로 추가합니다.
-3. 프로젝트를 엽니다.
-4. `Assets/_Project/Scenes/GameScene.unity`를 엽니다.
-5. Play 버튼을 눌러 실행합니다.
+2. Unity 6 `6000.4.7f1` 에디터가 설치되어 있는지 확인합니다.
+3. `LightNShadow-Survivor` 폴더를 프로젝트로 추가합니다.
+4. 프로젝트를 엽니다.
+5. `ProjectSettings/ProjectVersion.txt`의 `m_EditorVersion`이 `6000.4.7f1`인지 확인합니다.
+6. `Assets/_Project/Scenes/GameScene.unity`를 엽니다.
+7. Play 버튼을 눌러 실행합니다.
+
+## Unity 버전 및 패키지
+
+- Unity: Unity 6 `6000.4.7f1`
+- URP: `com.unity.render-pipelines.universal` 17.4.0
+- Input System: `com.unity.inputsystem` 1.19.0
+- AI Navigation: `com.unity.ai.navigation` 2.0.12
+- Unity UI: `com.unity.ugui` 2.0.0
+- Test Framework: `com.unity.test-framework` 1.6.0
+
+패키지 전체 목록은 `Packages/manifest.json`에서 확인합니다.
 
 ## 주요 씬
 
@@ -64,3 +77,4 @@ Assets/_Project/Tests/Editor
 - 씬, 프리팹, 머티리얼 변경은 Unity 에디터 저장 후 diff를 확인합니다.
 - 코드 변경 후 관련 PlayMode 테스트를 실행합니다.
 - 문서는 프로젝트 구조나 실행 방법이 바뀔 때 함께 갱신합니다.
+- 외부 에셋을 추가하거나 교체할 때는 `docs/repository-structure.md`의 에셋 구성을 함께 갱신합니다.

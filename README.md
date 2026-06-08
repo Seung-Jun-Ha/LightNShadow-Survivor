@@ -4,10 +4,19 @@ Unity 기반 3인칭 쿼터뷰 생존 액션 프로젝트입니다. 플레이어
 
 ## 프로젝트 개요
 
-- 엔진: Unity
+- 엔진: Unity 6
+- 사용 Unity 버전: 6000.4.7f1
 - 장르: 생존 액션
 - 핵심 메커니즘: 손전등의 방향, 거리, 각도를 이용한 지속 피해 전투
 - 주요 흐름: 시작 화면 -> 라운드 전투 -> 업그레이드 선택 -> 다음 라운드 -> 엔딩 또는 게임 오버
+
+## 주요 패키지
+
+- Universal Render Pipeline 17.4.0
+- Input System 1.19.0
+- AI Navigation 2.0.12
+- Unity UI 2.0.0
+- Unity Test Framework 1.6.0
 
 ## 주요 시스템
 
@@ -39,9 +48,17 @@ Unity 기반 3인칭 쿼터뷰 생존 액션 프로젝트입니다. 플레이어
 - `UI`: 메뉴, 업그레이드 카드, 게임 오버, 결과 화면
 - `Upgrades`: 업그레이드 데이터 정의
 
+## 에셋 구성
+
+- 프로젝트 전용 에셋: `Assets/_Project`
+- 외부 에셋: `Assets/ThirdParty`, `Assets/OccaSoftware`, `Assets/Monster_Orc (Troll)`
+- 주요 씬: `Assets/_Project/Scenes`
+- 주요 프리팹: `Assets/_Project/Prefabs`
+- 업그레이드 데이터: `Assets/_Project/Data/Upgrades`
+
 ## 실행
 
-1. Unity Hub에서 프로젝트 폴더 `LightNShadow-Survivor`를 엽니다.
+1. Unity Hub에서 Unity 6 `6000.4.7f1` 버전으로 프로젝트 폴더 `LightNShadow-Survivor`를 엽니다.
 2. `Assets/_Project/Scenes/GameScene.unity`를 엽니다.
 3. Unity Editor의 Play 버튼으로 실행합니다.
 
