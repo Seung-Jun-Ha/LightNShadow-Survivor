@@ -31,6 +31,8 @@ namespace LightNShadowSurvivor
 
         public void ApplyUpgrade(UpgradeData data)
         {
+            HideOpenUpgradeUI();
+
             if (data == null)
             {
                 Debug.LogWarning("[UpgradeManager] Tried to apply a null upgrade.");
@@ -78,8 +80,18 @@ namespace LightNShadowSurvivor
             ResumeAfterUpgradeSelection();
         }
 
+        private static void HideOpenUpgradeUI()
+        {
+            foreach (UpgradeUIController controller in FindObjectsByType<UpgradeUIController>(FindObjectsInactive.Include))
+            {
+                if (controller != null) controller.HideUpgradeSelection();
+            }
+        }
+
         public void ResumeAfterUpgradeSelection()
         {
+            HideOpenUpgradeUI();
+
             if (GameManager.Instance == null || RoundManager.Instance == null) return;
 
             if (GameManager.Instance.CurrentState == GameState.Upgrade)

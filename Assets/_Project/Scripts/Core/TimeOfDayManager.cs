@@ -39,6 +39,25 @@ public class TimeOfDayManager : MonoBehaviour
         StartCoroutine(TransitionRoutine());
     }
 
+    public void RestorePlayableLighting()
+    {
+        StopAllCoroutines();
+        isMorning = false;
+
+        if (nightVolume) nightVolume.weight = 0.55f;
+        if (morningVolume) morningVolume.weight = 0f;
+
+        if (directionalLight)
+        {
+            directionalLight.color = nightColor;
+            directionalLight.intensity = 0.39f;
+        }
+
+        RenderSettings.ambientIntensity = 0.27f;
+        RenderSettings.fog = true;
+        RenderSettings.fogDensity = 0.021f;
+    }
+
     private IEnumerator TransitionRoutine()
     {
         isMorning = true;

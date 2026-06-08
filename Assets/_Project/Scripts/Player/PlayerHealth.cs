@@ -43,6 +43,11 @@ namespace LightNShadowSurvivor
             
             OnHealthChanged?.Invoke(currentHealth);
 
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayPlayerHitSFX();
+            }
+
             if (currentHealth <= 0)
             {
                 Die();
@@ -64,12 +69,29 @@ namespace LightNShadowSurvivor
 
             isDead = true;
             Debug.Log("Player Died!");
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayPlayerDeathSFX();
+            }
+
             OnPlayerDeath?.Invoke();
 
             if (GetComponent<PlayerDeathHandler>() == null && GameManager.Instance != null)
             {
                 GameManager.Instance.TriggerGameOver();
             }
+        }
+
+        public void IncreaseDurability(float amount)
+        {
+            IncreaseMaxHealth(amount);
+        }
+
+        public void RestoreFullHealth()
+        {
+            isDead = false;
+            currentHealth = maxHealth;
+            OnHealthChanged?.Invoke(currentHealth);
         }
     }
 }

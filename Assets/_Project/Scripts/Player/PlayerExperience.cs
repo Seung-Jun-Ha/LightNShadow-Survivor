@@ -55,6 +55,11 @@ namespace LightNShadowSurvivor
             xpToNextLevel = Mathf.Round(xpToNextLevel * xpMultiplier);
             
             Debug.Log($"Level Up! Current Level: {currentLevel}");
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayLevelUpSFX();
+            }
+
             OnLevelUp?.Invoke(currentLevel);
 
             if (GameManager.Instance != null)

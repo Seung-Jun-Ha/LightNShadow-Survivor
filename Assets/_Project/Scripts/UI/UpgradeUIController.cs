@@ -93,6 +93,12 @@ namespace LightNShadowSurvivor
             }
         }
 
+        public void HideUpgradeSelection()
+        {
+            if (upgradePanel != null) upgradePanel.SetActive(false);
+            ClearCards();
+        }
+
         private void ClearCards()
         {
             foreach (var card in spawnedCards)

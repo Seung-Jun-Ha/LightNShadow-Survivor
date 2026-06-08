@@ -12,9 +12,9 @@ namespace LightNShadowSurvivor
         [SerializeField] private List<GameObject> round3Monsters;
         [SerializeField] private GameObject bossPrefab;
         [SerializeField] private float spawnRadius = 10f;
-        [SerializeField] private float round1SpawnInterval = 1.2f;
-        [SerializeField] private float round2SpawnInterval = 0.9f;
-        [SerializeField] private float round3SpawnInterval = 0.6f;
+        [SerializeField] private float round1SpawnInterval = 0.96f;
+        [SerializeField] private float round2SpawnInterval = 0.72f;
+        [SerializeField] private float round3SpawnInterval = 0.48f;
         [SerializeField] private float startDelay = 2f;
         [SerializeField] private int maxMonsters = 50;
 
@@ -120,6 +120,8 @@ namespace LightNShadowSurvivor
             GameObject boss = Instantiate(bossPrefab, spawnPos, Quaternion.identity);
             activeMonsters.Add(boss);
             SetupEnemyLayer(boss);
+            EnsureVisibleMonsterRenderers(boss);
+            FixMissingMonsterMaterials(boss);
         }
 
         private void SpawnMonster()
@@ -148,6 +150,8 @@ namespace LightNShadowSurvivor
             Debug.Log($"[MonsterSpawner] Successfully instantiated {spawned.name}");
             
             SetupEnemyLayer(spawned);
+            EnsureVisibleMonsterRenderers(spawned);
+            FixMissingMonsterMaterials(spawned);
         }
 
         private void SetupEnemyLayer(GameObject obj)
@@ -169,6 +173,47 @@ namespace LightNShadowSurvivor
                 case 1: return round1SpawnInterval;
                 case 2: return round2SpawnInterval;
                 default: return round3SpawnInterval;
+            }
+        }
+
+        private static void EnsureVisibleMonsterRenderers(GameObject monster)
+        {
+            if (monster == null) return;
+
+            foreach (Renderer renderer in monster.GetComponentsInChildren<Renderer>(true))
+            {
+                renderer.enabled = true;
+                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+                renderer.receiveShadows = true;
+            }
+        }
+
+        private static void FixMissingMonsterMaterials(GameObject monster)
+        {
+            if (monster == null) return;
+
+            Shader shader = Shader.Find("Universal Render Pipeline/Lit");
+            if (shader == null) shader = Shader.Find("Standard");
+            if (shader == null) return;
+
+            foreach (Renderer renderer in monster.GetComponentsInChildren<Renderer>(true))
+            {
+                Material[] materials = renderer.sharedMaterials;
+                bool changed = false;
+
+                for (int i = 0; i < materials.Length; i++)
+                {
+                    Material material = materials[i];
+                    if (material != null && material.shader != null && material.shader.name != "Hidden/InternalErrorShader") continue;
+
+                    Material fallback = new Material(shader) { name = "Monster_VisibleFallback" };
+                    if (fallback.HasProperty("_BaseColor")) fallback.SetColor("_BaseColor", Color.white);
+                    else fallback.color = Color.white;
+                    materials[i] = fallback;
+                    changed = true;
+                }
+
+                if (changed) renderer.materials = materials;
             }
         }
 

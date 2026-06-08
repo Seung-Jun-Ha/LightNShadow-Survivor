@@ -8,7 +8,7 @@ namespace LightNShadowSurvivor
     public class PlayerController : MonoBehaviour
     {
         [Header("Movement Settings")]
-        [SerializeField] private float moveSpeed = 6f;
+        [SerializeField] private float moveSpeed = 6.6f;
         [SerializeField] private float turnSpeed = 100f; // Adjusted for degrees per second
 
         [Header("Collision Settings")]
@@ -22,12 +22,16 @@ namespace LightNShadowSurvivor
         private Animator animator;
         private InputAction moveAction;
         private Vector2 moveInput;
+        private Vector3 spawnPosition;
+        private Quaternion spawnRotation;
 
         public static PlayerController Instance { get; private set; }
 
         private void Awake()
         {
             Instance = this;
+            spawnPosition = transform.position;
+            spawnRotation = transform.rotation;
             rb = GetComponent<Rigidbody>();
             if (rb == null) rb = gameObject.AddComponent<Rigidbody>();
 
@@ -137,6 +141,24 @@ namespace LightNShadowSurvivor
                 // Animation based on movement magnitude
                 float speed = new Vector2(moveInput.x, moveInput.y).magnitude;
                 animator.SetFloat("MoveSpeed", speed);
+            }
+        }
+
+        public void IncreaseMoveSpeedPercent(float percent)
+        {
+            moveSpeed *= 1f + Mathf.Max(0f, percent);
+        }
+
+        public void ResetToSpawn()
+        {
+            transform.SetPositionAndRotation(spawnPosition, spawnRotation);
+
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                rb.position = spawnPosition;
+                rb.rotation = spawnRotation;
             }
         }
     }

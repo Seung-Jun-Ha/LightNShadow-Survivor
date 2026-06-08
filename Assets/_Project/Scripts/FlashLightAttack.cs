@@ -15,12 +15,13 @@ namespace LightNShadowSurvivor
         [SerializeField] private int maxTargets = 64;
 
         public float damagePerSecond = 10f;
-        public float range = 6f;
+        public float range = 5f;
         public float angle = 30f;
         public LayerMask targetLayer;
 
         public Light lightComponent;
         private Collider[] hitBuffer;
+        private float baseLightIntensity = -1f;
 
         private void Awake()
         {
@@ -45,6 +46,7 @@ namespace LightNShadowSurvivor
                 lightComponent.enabled = true;
                 lightComponent.range = range;
                 lightComponent.spotAngle = angle;
+                ApplyBaseLightBoost();
             }
         }
 
@@ -60,6 +62,7 @@ namespace LightNShadowSurvivor
             lightComponent.enabled = isActive;
             lightComponent.range = range;
             lightComponent.spotAngle = angle;
+            ApplyBaseLightBoost();
 
             if (!isActive) return;
 
@@ -98,6 +101,13 @@ namespace LightNShadowSurvivor
                     receiver.TakeLightDamage(damagePerSecond * Time.deltaTime);
                 }
             }
+        }
+
+        private void ApplyBaseLightBoost()
+        {
+            if (lightComponent == null) return;
+            if (baseLightIntensity < 0f) baseLightIntensity = lightComponent.intensity;
+            lightComponent.intensity = baseLightIntensity * 1.3f;
         }
     }
 }

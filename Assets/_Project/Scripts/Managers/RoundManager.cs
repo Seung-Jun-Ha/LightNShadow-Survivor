@@ -74,6 +74,8 @@ namespace LightNShadowSurvivor
 
         private void StartRoundTimer()
         {
+            RestoreRoundVisualState();
+
             startedRound = currentRound;
             timer = GetRoundDuration(currentRound);
             elapsedTime = 0f;
@@ -108,6 +110,11 @@ namespace LightNShadowSurvivor
             isTimerRunning = false;
             OnRoundEnded?.Invoke(currentRound);
 
+            if (AudioManager.Instance != null && currentRound < 3)
+            {
+                AudioManager.Instance.PlayRoundClearSFX();
+            }
+
             var spawner = FindAnyObjectByType<MonsterSpawner>();
             if (spawner != null) spawner.StopAndClearMonsters();
 
@@ -121,6 +128,22 @@ namespace LightNShadowSurvivor
             {
                 GameManager.Instance.TriggerEnding();
             }
+        }
+
+        private static void RestoreRoundVisualState()
+        {
+            foreach (UpgradeUIController controller in FindObjectsByType<UpgradeUIController>(FindObjectsInactive.Include))
+            {
+                if (controller != null) controller.HideUpgradeSelection();
+            }
+
+            foreach (TimeOfDayManager timeOfDay in FindObjectsByType<TimeOfDayManager>(FindObjectsInactive.Include))
+            {
+                if (timeOfDay != null) timeOfDay.RestorePlayableLighting();
+            }
+
+            RenderSettings.ambientIntensity = 0.27f;
+            RenderSettings.fogDensity = 0.021f;
         }
 
         public void ProceedToNextRound()
